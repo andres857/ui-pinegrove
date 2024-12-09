@@ -61,13 +61,11 @@
     const headers: Header[] = [
         { text: "Name", value: "name" },
         { text: "Street", value: "address" },
-
         { text: "City", value: "city" },
         { text: "Country", value: "country" },
         { text: "Province", value: "province" },
         { text: "Microbs", value: "microbs" },
         { text: "Zip", value: "zip" },
-
         { text: "Latitude", value: "latitude"},
         { text: "Longitude", value: "longitude"},
         { text: "Radio", value: "radiusMeters"},
@@ -81,33 +79,39 @@
 </script>
 
 <template>
-    <div class="bg-slate-200 flex w-full min-h-screen justify-center items-center">
-        <div v-if="error" class="text-red-500">{{ error }}</div>
-        <div>
+    <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 flex justify-center ">
             <h4>Ubicaciones</h4>
         </div>
-        <div>
-            <div class="mb-4">
-                <input
-                    v-model="searchValue"
-                    class="p-2 border rounded"
-                    placeholder="Buscar ubicaciones..."
-                />
+        <div class="col-span-12 flex items-center justify-around gap-3">
+            <input
+                v-model="searchValue"
+                class="p-2 border rounded"
+                placeholder="Buscar Ubicaciones..."
+            />
+            <div>
+                <button class="rounded-lg px-4 py-2 bg-green-700 text-green-100 hover:bg-green-800 duration-300">Crear</button>
             </div>
         </div>
-        <div>
-            <EasyDataTable
-            :headers="headers"
-            :items="locations"
-            :search-value="searchValue"
-            :loading="isLoading"
-            :items-per-page="itemsPerPage"
-            :rows-items="[5,10,15,20]"
-            :rows-per-page="10"
-            alternating
-            buttons-pagination
-            show-index
-        />
+        <!-- <div v-if="error" class="text-red-500">{{ error }}</div> -->
+        <div class="col-span-12 flex justify-center items-center ">
+            <div class="max-w-4xl w-full"> <!-- Contenedor con ancho máximo -->
+                <EasyDataTable
+                    :headers="headers"
+                    :items="locations"
+                    :search-value="searchValue"
+                    :loading="isLoading"
+                    :items-per-page="itemsPerPage"
+                    :rows-items="[5,10,15,20]"
+                    :rows-per-page="10"
+                    alternating
+                    buttons-pagination
+                    show-index
+                />
+            </div>
+            
         </div>
     </div>
+
+
 </template>
