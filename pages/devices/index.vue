@@ -3,9 +3,9 @@
       :headers="headers"
       :items="items"
     />
-  </template>
+</template>
   
-  <script lang="ts" setup>
+<script lang="ts" setup>
   import type { Header, Item } from "vue3-easy-data-table";
   
   const headers: Header[] = [
@@ -25,4 +25,4 @@
     { player: "Kevin Durant", team: "BKN", number: 7, position: 'F', indicator: {"height": '6-10', "weight": 240}, lastAttended: "Texas-Austin", country: "USA"},
     { player: "Giannis Antetokounmpo", team: "MIL", number: 34, position: 'F', indicator: {"height": '6-11', "weight": 242}, lastAttended: "Filathlitikos", country: "Greece"},
   ];
-  </script>
+</script>
