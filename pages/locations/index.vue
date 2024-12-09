@@ -95,7 +95,7 @@
         </div>
         <!-- <div v-if="error" class="text-red-500">{{ error }}</div> -->
         <div class="col-span-12 flex justify-center items-center ">
-            <div class="max-w-4xl w-full"> <!-- Contenedor con ancho máximo -->
+            <div class="max-w-4xl w-full"> 
                 <EasyDataTable
                     :headers="headers"
                     :items="locations"
