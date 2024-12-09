@@ -32,6 +32,12 @@
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
 
+    const searchValue = ref('')
+    // Variables para la paginación
+    const itemsPerPage = ref(10)
+    const serverItemsLength = ref(0) // Total de items si usas paginación del servidor
+
+
     // Creamos las referencias reactivas necesarias
     const locations = ref<Location[]>([])
     const isLoading = ref(false)
@@ -53,11 +59,19 @@
     }
 
     const headers: Header[] = [
-        { text: "Nombre", value: "name" },
-        { text: "Latitud", value: "latitude"},
-        { text: "Longitud", value: "longitude"},
+        { text: "Name", value: "name" },
+        { text: "Street", value: "address" },
+
+        { text: "City", value: "city" },
+        { text: "Country", value: "country" },
+        { text: "Province", value: "province" },
+        { text: "Microbs", value: "microbs" },
+        { text: "Zip", value: "zip" },
+
+        { text: "Latitude", value: "latitude"},
+        { text: "Longitude", value: "longitude"},
         { text: "Radio", value: "radiusMeters"},
-        { text: "Descripcion", value: "description"},
+        { text: "Description", value: "description"},
     ];
     
     // Cargamos los datos cuando el componente se monta
@@ -73,15 +87,27 @@
             <h4>Ubicaciones</h4>
         </div>
         <div>
+            <div class="mb-4">
+                <input
+                    v-model="searchValue"
+                    class="p-2 border rounded"
+                    placeholder="Buscar ubicaciones..."
+                />
+            </div>
+        </div>
+        <div>
             <EasyDataTable
             :headers="headers"
             :items="locations"
+            :search-value="searchValue"
             :loading="isLoading"
+            :items-per-page="itemsPerPage"
+            :rows-items="[5,10,15,20]"
+            :rows-per-page="10"
             alternating
             buttons-pagination
             show-index
         />
         </div>
-
     </div>
 </template>
