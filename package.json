@@ -10,11 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@googlemaps/js-api-loader": "^1.16.8",
-=======
-    "axion": "^0.1.0",
->>>>>>> 8947e0e1e869c6482cb5fe594fcda6ee9a457ee2
     "axios": "^1.7.9",
     "flowbite": "^2.5.2",
     "nuxt": "^3.14.1592",
