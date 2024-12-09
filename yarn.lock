@@ -1646,6 +1646,11 @@ autoprefixer@^10.4.20:
     picocolors "^1.0.1"
     postcss-value-parser "^4.2.0"
 
+axion@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/axion/-/axion-0.1.0.tgz#5413b420f916dab89c8e7329d40eb78a0b8838a4"
+  integrity sha512-KvigipUy1Ntp1GiCHAl3GjqD5KMr/PndPVYF+qeFbl/t3dUx3//iYVHND7wUkr1O2Cmh94k/PM+yTc0sv6Lvqw==
+
 axios@^1.7.9:
   version "1.7.9"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.7.9.tgz#d7d071380c132a24accda1b2cfc1535b79ec650a"
