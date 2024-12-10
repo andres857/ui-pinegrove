@@ -32,7 +32,17 @@
                     </select>
                 </div>
                 <div class="bg-gray-100 rounded-lg shadow-lg p-6 w-72">
-                    <Map />
+                    <Map 
+                    v-if="locationInfo"
+                    :latitude="Number(locationInfo.latitude)" 
+                    :longitude="Number(locationInfo.longitude)"
+                    :radius="Number(locationInfo.radiusMeters)"
+                    />
+
+                    <!-- Puedes mostrar un mensaje de carga mientras no haya datos -->
+                    <div v-else>
+                    Cargando información de la ubicación...
+                    </div>
                 </div>
             </div>
         </div>
