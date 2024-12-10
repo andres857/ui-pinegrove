@@ -2,8 +2,9 @@
     import { ref, onMounted } from 'vue'
     import axios from 'axios'
     import { useRuntimeConfig } from '#app'
+    import { useRouter } from 'vue-router'
 
-    import type { Header, Item } from "vue3-easy-data-table";
+    import type { Header, Item, ClickRowArgument } from "vue3-easy-data-table";
 
 
     // Definimos las interfaces para tipar nuestros datos
@@ -32,6 +33,8 @@
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
 
+    const router = useRouter()
+
     const searchValue = ref('')
     // Variables para la paginación
     const itemsPerPage = ref(10)
@@ -42,6 +45,20 @@
     const locations = ref<Location[]>([])
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+
+    const headers: Header[] = [
+        { text: "Name", value: "name" },
+        { text: "Street", value: "address" },
+        { text: "City", value: "city" },
+        { text: "Country", value: "country" },
+        { text: "Province", value: "province" },
+        { text: "Microbs", value: "microbs" },
+        { text: "Zip", value: "zip" },
+        { text: "Latitude", value: "latitude"},
+        { text: "Longitude", value: "longitude"},
+        { text: "Radio", value: "radiusMeters"},
+        { text: "Description", value: "description"},
+    ];
 
     // Función para obtener las ubicaciones
     const fetchLocations = async () => {
@@ -58,19 +75,13 @@
         }
     }
 
-    const headers: Header[] = [
-        { text: "Name", value: "name" },
-        { text: "Street", value: "address" },
-        { text: "City", value: "city" },
-        { text: "Country", value: "country" },
-        { text: "Province", value: "province" },
-        { text: "Microbs", value: "microbs" },
-        { text: "Zip", value: "zip" },
-        { text: "Latitude", value: "latitude"},
-        { text: "Longitude", value: "longitude"},
-        { text: "Radio", value: "radiusMeters"},
-        { text: "Description", value: "description"},
-    ];
+    const handleRowClick = (item: any) => {
+
+        console.log('clicked',item);
+        router.push({
+            path: `/locations/${item.id}`,
+        });
+    }
     
     // Cargamos los datos cuando el componente se monta
     onMounted(() => {
@@ -93,10 +104,10 @@
                 <button class="rounded-lg px-4 py-2 bg-green-700 text-green-100 hover:bg-green-800 duration-300">Crear</button>
             </div>
         </div>
-        <!-- <div v-if="error" class="text-red-500">{{ error }}</div> -->
-        <div class="col-span-12 flex justify-center items-center ">
+        <div  class="col-span-12 flex justify-center items-center ">
             <div class="max-w-4xl w-full"> 
                 <EasyDataTable
+                    @click-row="handleRowClick"
                     :headers="headers"
                     :items="locations"
                     :search-value="searchValue"
@@ -109,9 +120,17 @@
                     show-index
                 />
             </div>
-            
         </div>
     </div>
-
-
+    
 </template>
+
+<style scoped>
+    :deep(.vue3-easy-data-table__tbody tr) {
+    cursor: pointer;
+    }
+
+    :deep(.vue3-easy-data-table__tbody tr:hover) {
+    background-color: rgba(0, 0, 0, 0.05);
+    }
+</style>

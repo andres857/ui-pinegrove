@@ -16,6 +16,7 @@
           }, 
           icon: markerIconLocations 
         }"/>
+        
       </GoogleMap>
     </client-only>
   </template>
@@ -68,8 +69,5 @@
     fillColor: '#FF0000',
     fillOpacity: 0.35,
   }
-  onMounted(()=>{
-    console.log('sss',apiKey);
-    
-  })
+
 </script>

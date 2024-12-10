@@ -5,18 +5,17 @@
         <BogotaMap />
       </div>
     </div>
-  </template>
+</template>
   
   <script setup>
-  // Importamos nuestro componente del mapa
   import BogotaMap from '~/components/GoogleMapView.vue'
-  </script>
+</script>
   
-  <style scoped>
+<style scoped>
   .map-container {
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
   }
-  </style>
+</style>

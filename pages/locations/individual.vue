@@ -25,6 +25,7 @@
                     </select>
                 </div>
                 <div class="bg-gray-100 rounded-lg shadow-lg p-6 w-72">
+                    <Map />
                 </div>
             </div>
         </div>
@@ -32,4 +33,5 @@
 </template>
 
 <script setup lang="ts">
+  import Map from '~/components/GoogleMapView.vue'
 </script>
