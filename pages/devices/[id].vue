@@ -1,13 +1,13 @@
-<template>
-    <div class="flex flex-col flex-nowrap justify-center items-start h-dvh px-40">
-        <h1 class="font-sans text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-12">
-            Dispositivo Sigfox
-        </h1>
-        <div class="flex flex-row flex-nowrap justify-around w-full">
+<template lang="">
+    <div class="grid grid-cols-3 grid-rows-5 px-40 gap-x-10 pb-10 font-sans">
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3">Dispositivo Sigfox</h1>
+        <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-2 overflow-hidden h-min">
+
             <!-- Información básica del dispositivo -->
-            <div class="bg-gray-100 rounded-lg shadow-lg p-6 text-2xl text-gray-700 text-left">
+            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Information</h2>
+            <div class="py-8 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg">
                 <div v-if="deviceInfo">
-                    <p><strong>Friendly Name: </strong>{{ deviceInfo.friendlyName }}</p>
+                    <p><strong>Name: </strong>{{ deviceInfo.friendlyName }}</p>
                     <p><strong>Sigfox ID: </strong>{{ deviceInfo.SigfoxId }}</p>
                     <p><strong>Device Type: </strong>{{ deviceInfo.deviceType }}</p>
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.lastLocationUpdate) }}</p>
@@ -16,26 +16,24 @@
                     <p>Cargando datos...</p>
                 </div>
             </div>
-
-            <!-- Mapa -->
-            <div>
-                <div class="bg-gray-100 rounded-lg shadow-lg p-6 w-72">
-                    <Map 
-                        v-if="deviceInfo && deviceInfo.lastLatitude && deviceInfo.lastLongitude"
-                        :latitude="Number(deviceInfo.lastLatitude)"
-                        :longitude="Number(deviceInfo.lastLongitude)"
-                        :radius="2000"
-                    />
-                    <div v-else>
-                        No hay información de ubicación disponible
-                    </div>
+        </div>
+         <!-- Mapa -->
+        <div class="row-span-2 col-span-2 w-full">
+            <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-[calc(60vh-50px)]">
+                <Map 
+                    v-if="deviceInfo && deviceInfo.lastLatitude && deviceInfo.lastLongitude"
+                    :latitude="Number(deviceInfo.lastLatitude)"
+                    :longitude="Number(deviceInfo.lastLongitude)"
+                    :radius="2000"
+                />
+                <div v-else>
+                    No hay información de ubicación disponible
                 </div>
             </div>
         </div>
-
         <!-- Tabla de mensajes -->
-        <div class="w-full mt-8">
-            <h2 class="text-2xl font-bold mb-4">Mensajes del Dispositivo</h2>
+        <div class="col-span-3 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
+            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Mensajes del Dispositivo</h2>
             <EasyDataTable
                 v-if="deviceInfo"
                 :headers="messageHeaders"
@@ -48,7 +46,13 @@
                 alternating
                 buttons-pagination
                 show-index
-            />
+            >
+                <template #header="header">
+                    <p class="text-gray-700 text-base">
+                        {{ header.text }}
+                    </p>
+                </template>
+            </EasyDataTable>
         </div>
     </div>
 </template>
@@ -60,6 +64,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Map from '~/components/GoogleMapView.vue'
 import type { Header } from "vue3-easy-data-table"
+import Vue3EasyDataTable from 'vue3-easy-data-table';
 
 // ... tus interfaces ...
 
@@ -72,7 +77,6 @@ const deviceInfo = ref<SigfoxDevice | null>(null)
 const isLoading = ref(false)
 const searchValue = ref('')
 const itemsPerPage = ref(10)
-
 // Headers para la tabla de mensajes
 const messageHeaders: Header[] = [
     { text: "Fecha", value: "createdAt", sortable: true },
@@ -121,5 +125,13 @@ onMounted(() => {
 
 :deep(.vue3-easy-data-table__tbody tr:hover) {
     background-color: rgba(0, 0, 0, 0.05);
+}
+:deep(.vue3-easy-data-table__body td){
+    --easy-table-body-row-font-size:1.2em;
+    --easy-table-body-row-height:60px;
+    --easy-table-body-row-font-color:#374151;
+    font-size:var(--easy-table-body-row-font-size);
+    height:var(--easy-table-body-row-height);
+    color:var(--easy-table-body-row-font-color);
 }
 </style>

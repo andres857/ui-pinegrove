@@ -105,6 +105,17 @@ onMounted(() => {
 </script>
 
 <template>
+    <!--    ANIMACION DE CARGA
+    <div class="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-800"></div>
+    </div>
+    -->
+    <nav class="w-full p-8 bg-gray-700 text-gray-100 text-center mb-10 text-xl">
+        <ul class="inline-flex flex-row gap-8">
+            <li><a class="hover:underline" href="../locations/">Locations</a></li>
+            <li><a class="hover:underline" href="../devices/">Devices</a></li>
+        </ul>
+    </nav>
     <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12 flex justify-center">
             <h4>Dispositivos Sigfox</h4>

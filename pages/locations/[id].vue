@@ -1,13 +1,12 @@
 <template lang="">
-    <div class="flex flex-col flex-nowrap justify-center items-start h-dvh px-40">
-        <h1 class="font-sans text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-12">Perfil Individual</h1>
-        <div class="flex flex-row flex-nowrap justify-around w-full">
+    <div class="grid grid-cols-3 grid-rows-5 h-dvh px-40 gap-x-10 pb-10 font-sans">
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3">Ubication</h1>
+        <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-4 overflow-hidden h-min">
 
-            <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg p-6 text-2xl [&>strong]:font-bold text-gray-700 text-left">
-                
-                <!-- Iteramos sobre las propiedades usando Object.entries -->
-
-                <div v-if='locationInfo' v-for="[key, value] in Object.entries(locationInfo)" 
+            <!-- Iteramos sobre las propiedades usando Object.entries -->
+            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Information</h2>
+            <div class="py-8 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg">
+                <div v-if='locationInfoPrint' v-for="[key, value] in Object.entries(locationInfoPrint)" 
                     :key="key"
                     >
                     <p>
@@ -21,28 +20,26 @@
                     <p>Cargando datos</p>
                 </div>
             </div>
+        </div>
+        <div class="grid auto-rows-max row-span-4 col-span-2 w-full">
+            <select name="distance" class="appearance-node bg-gray-100 border-none text-gray-700 text-base rounded-md focus:ring-blue-500 focus:border-blue-500 p-4 [&>option]:text-gray-700 [&>option]:bg-gray-100 justify-self-end mb-7 h-fit">
+                <option disabled selected>Radius Meters</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+                <option value="5000">5000</option>
+                <option value="10000">10000</option>
+            </select>
+            <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-[calc(60vh-50px)]">
+                <Map 
+                v-if="locationInfo"
+                :latitude="Number(locationInfo.latitude)" 
+                :longitude="Number(locationInfo.longitude)"
+                :radius="Number(locationInfo.radiusMeters)"
+                />
 
-            <div>
-                <div class="mb-12">
-                    <select name="distance">
-                        <option value="500">500</option>
-                        <option value="1000">1000</option>
-                        <option value="5000">5000</option>
-                        <option value="10000">10000</option>
-                    </select>
-                </div>
-                <div class="bg-gray-100 rounded-lg shadow-lg p-6 w-72">
-                    <Map 
-                    v-if="locationInfo"
-                    :latitude="Number(locationInfo.latitude)" 
-                    :longitude="Number(locationInfo.longitude)"
-                    :radius="Number(locationInfo.radiusMeters)"
-                    />
-
-                    <!-- Puedes mostrar un mensaje de carga mientras no haya datos -->
-                    <div v-else>
-                    Cargando información de la ubicación...
-                    </div>
+                <!-- Puedes mostrar un mensaje de carga mientras no haya datos -->
+                <div v-else>
+                Cargando información de la ubicación...
                 </div>
             </div>
         </div>
@@ -55,6 +52,7 @@
     import { ref, onMounted } from 'vue'
     import { useRoute } from 'vue-router'
     import Map from '~/components/GoogleMapView.vue'
+import Id from '../devices/[id].vue'
 
     // Definimos la interfaz para tipar los datos
     interface LocationDetail {
@@ -82,13 +80,19 @@
 
     const locationInfo = ref<LocationDetail | null>(null)
 
-    console.log('ID de ubicación:', locationId) 
+    let locationInfoPrint = {}
+
+    console.log('ID de ubicación:', locationId)
 
     // Aquí puedes agregar la lógica para cargar los detalles de la ubicación
     const loadLocationDetails = async () => {
         try {
             const response = await axios.get(`${apiBase}/locations/${locationId}`)
             locationInfo.value = response.data;
+            locationInfoPrint = {...locationInfo.value}
+            delete locationInfoPrint.id
+            delete locationInfoPrint.clientId
+            delete locationInfoPrint.client
         } catch (error) {
             console.error('Error al cargar los detalles:', error)
         }
