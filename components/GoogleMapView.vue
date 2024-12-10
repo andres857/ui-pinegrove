@@ -48,15 +48,15 @@
     map.value = mapInstance
     
     // Cargamos la biblioteca de marcadores avanzados
-    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker")
+    // const { AdvancedMarkerElement } = await google.maps.importLibrary("marker")
     
-    // Creamos el marcador avanzado
-    const marker = new AdvancedMarkerElement({
-      map: mapInstance,
-      position: center.value,
-      title: 'Bogotá',
-      // Para personalizar el marcador, puedes usar el elemento content
-    })
+    // // Creamos el marcador avanzado
+    // const marker = new AdvancedMarkerElement({
+    //   map: mapInstance,
+    //   position: center.value,
+    //   title: 'Bogotá',
+    //   // Para personalizar el marcador, puedes usar el elemento content
+    // })
   }
 
   // Configuración del círculo

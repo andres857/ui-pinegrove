@@ -6,7 +6,8 @@
             <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg p-6 text-2xl [&>strong]:font-bold text-gray-700 text-left">
                 
                 <!-- Iteramos sobre las propiedades usando Object.entries -->
-                <div v-for="[key, value] in Object.entries(locationInfo)" 
+
+                <div v-if='locationInfo' v-for="[key, value] in Object.entries(locationInfo)" 
                     :key="key"
                     >
                     <p>
@@ -15,6 +16,9 @@
                         </strong>                        
                         {{ value === null ? 'No disponible' : value }}
                     </p>
+                </div>
+                <div v-else> 
+                    <p>Cargando datos</p>
                 </div>
             </div>
 
@@ -31,13 +35,9 @@
                     <Map />
                 </div>
             </div>
-
         </div>
-        {{ locationInfo }}
     </div>
 </template>
-
-
 
 <script setup lang="ts">
     import { useRuntimeConfig } from '#app'
