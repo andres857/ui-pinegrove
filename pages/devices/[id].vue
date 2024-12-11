@@ -11,6 +11,7 @@
                     <p><strong>Name: </strong>{{ deviceInfo.friendlyName }}</p>
                     <p><strong>Sigfox ID: </strong>{{ deviceInfo.SigfoxId }}</p>
                     <p><strong>Device Type: </strong>{{ deviceInfo.deviceType }}</p>
+                    <!-- <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p> -->
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p>
                 </div>
                 <div v-else>
@@ -28,7 +29,7 @@
                     :radius="2000"
                 />
                 <div v-else>
-                    No hay información de ubicación disponible
+                    No hay información de dispositivos disponible
                 </div>
             </div>
         </div>
@@ -38,7 +39,7 @@
             <EasyDataTable
                 v-if="deviceInfo"
                 :headers="messageHeaders"
-                :items="deviceInfo.messages"
+                :items="messagesHistory"
                 :search-value="searchValue"
                 :loading="isLoading"
                 :items-per-page="itemsPerPage"
@@ -74,6 +75,7 @@
 
     const deviceInfo = ref<SigfoxDevice | null>(null)
     const isLoading = ref(false)
+    const messagesHistory = ref()
     const searchValue = ref('')
     const itemsPerPage = ref(10)
 
@@ -90,31 +92,47 @@
 
     const formatDate = (dateString: string | null): string => {
         if (!dateString) return 'No disponible';
-    return new Date(dateString).toLocaleString('es-ES', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    });
-}
-
-const loadDeviceDetails = async () => {
-    isLoading.value = true
-    try {
-        const response = await axios.get(`${apiBase}/devices/${deviceId}`)
-        deviceInfo.value = response.data
-    } catch (error) {
-        console.error('Error al cargar los detalles del dispositivo:', error)
-    } finally {
-        isLoading.value = false
+        return new Date(dateString).toLocaleString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
     }
-}
 
-onMounted(() => {
-    loadDeviceDetails()
-})
+    const loadDeviceDetails = async () => {
+        isLoading.value = true
+        try {
+            const response = await axios.get(`${apiBase}/devices/${deviceId}`);
+            deviceInfo.value = response.data;
+            formatMessagesHistory()
+        } catch (error) {
+            console.error('Error al cargar los detalles del dispositivo:', error);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+    const formatMessagesHistory = async () => {
+        messagesHistory.value = deviceInfo.value.messages
+        // Primero ordenamos los mensajes
+        .sort((a: any, b: any) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA; // Ordenamiento descendente (más reciente primero)
+        })
+        // Luego aplicamos el formato
+        .map((message: any) => ({
+            ...message,
+            createdAt: formatDate(message.createdAt),
+            updatedAt: formatDate(message.updatedAt),
+        }));
+    }
+
+    onMounted(() => {
+        loadDeviceDetails()
+    })
 </script>
 
 <style scoped>
