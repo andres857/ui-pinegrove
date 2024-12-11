@@ -1,4 +1,5 @@
 <template lang="">
+    <Navbar/>
     <div class="grid grid-cols-3 grid-rows-5 h-dvh px-40 gap-x-10 pb-10 font-sans">
         <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3">Ubication</h1>
         <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-4 overflow-hidden h-min">
@@ -51,8 +52,10 @@
     import axios from 'axios'
     import { ref, onMounted } from 'vue'
     import { useRoute } from 'vue-router'
+
     import Map from '~/components/GoogleMapView.vue'
-import Id from '../devices/[id].vue'
+    import Id from '../devices/[id].vue'
+    import Navbar from '~/components/Navbar.vue'
 
     // Definimos la interfaz para tipar los datos
     interface LocationDetail {

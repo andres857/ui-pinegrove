@@ -1,6 +1,7 @@
 <template lang="">
+    <Navbar/>
     <div class="grid grid-cols-3 grid-rows-5 px-40 gap-x-10 pb-10 font-sans">
-        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3">Dispositivo Sigfox</h1>
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3">Device</h1>
         <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-2 overflow-hidden h-min">
 
             <!-- Información básica del dispositivo -->
@@ -13,7 +14,7 @@
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.lastLocationUpdate) }}</p>
                 </div>
                 <div v-else>
-                    <p>Cargando datos...</p>
+                    <p>Loading...</p>
                 </div>
             </div>
         </div>
@@ -33,7 +34,7 @@
         </div>
         <!-- Tabla de mensajes -->
         <div class="col-span-3 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
-            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Mensajes del Dispositivo</h2>
+            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Messages</h2>
             <EasyDataTable
                 v-if="deviceInfo"
                 :headers="messageHeaders"
@@ -58,39 +59,37 @@
 </template>
 
 <script setup lang="ts">
-import { useRuntimeConfig } from '#app'
-import axios from 'axios'
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import Map from '~/components/GoogleMapView.vue'
-import type { Header } from "vue3-easy-data-table"
-import Vue3EasyDataTable from 'vue3-easy-data-table';
+    import { useRuntimeConfig } from '#app'
+    import axios from 'axios'
+    import { ref, onMounted } from 'vue'
+    import { useRoute } from 'vue-router'
+    import Map from '~/components/GoogleMapView.vue'
+    import type { Header } from "vue3-easy-data-table"
+    import Navbar from '~/components/Navbar.vue'
 
-// ... tus interfaces ...
+    const config = useRuntimeConfig()
+    const apiBase = config.public.apiBase
+    const route = useRoute()
+    const deviceId = route.params.id as string
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
-const route = useRoute()
-const deviceId = route.params.id as string
+    const deviceInfo = ref<SigfoxDevice | null>(null)
+    const isLoading = ref(false)
+    const searchValue = ref('')
+    const itemsPerPage = ref(10)
 
-const deviceInfo = ref<SigfoxDevice | null>(null)
-const isLoading = ref(false)
-const searchValue = ref('')
-const itemsPerPage = ref(10)
-// Headers para la tabla de mensajes
-const messageHeaders: Header[] = [
-    { text: "Fecha", value: "createdAt", sortable: true },
-    { text: "Tipo", value: "messageType" },
-    { text: "Data", value: "data" },
-    { text: "LQI", value: "lqi" },
-    { text: "Operador", value: "operatorName" },
-    { text: "Latitud", value: "computedLocation.lat" },
-    { text: "Longitud", value: "computedLocation.lng" },
-    { text: "Radio", value: "computedLocation.radius" }
-]
+    const messageHeaders: Header[] = [
+        { text: "Fecha", value: "createdAt", sortable: true },
+        { text: "Tipo", value: "messageType" },
+        { text: "Data", value: "data" },
+        { text: "LQI", value: "lqi" },
+        { text: "Operador", value: "operatorName" },
+        { text: "Latitud", value: "computedLocation.lat" },
+        { text: "Longitud", value: "computedLocation.lng" },
+        { text: "Radio", value: "computedLocation.radius" }
+    ]
 
-const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'No disponible';
+    const formatDate = (dateString: string | null): string => {
+        if (!dateString) return 'No disponible';
     return new Date(dateString).toLocaleString('es-ES', {
         day: '2-digit',
         month: 'long',

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useRuntimeConfig } from '#app'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import { useRuntimeConfig } from '#app';
+import { useRouter } from 'vue-router';
 import type { Header } from "vue3-easy-data-table";
+import Navbar from '~/components/Navbar.vue';
 
 interface Client {
     id: string;
@@ -70,13 +71,13 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 
 const headers: Header[] = [
-    { text: "Friendly Name", value: "friendlyName" },
+    { text: "Name", value: "friendlyName" },
     { text: "Sigfox ID", value: "SigfoxId" },
     { text: "Device Type", value: "deviceType" },
     { text: "Last Latitude", value: "lastLatitude" },
     { text: "Last Longitude", value: "lastLongitude" },
     { text: "Last Update", value: "lastLocationUpdate" },
-    { text: "Client", value: "client.name" }
+    // { text: "Client", value: "client.name" }
 ];
 
 const fetchDevices = async () => {
@@ -105,30 +106,21 @@ onMounted(() => {
 </script>
 
 <template>
-    <!--    ANIMACION DE CARGA
-    <div class="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-800"></div>
-    </div>
-    -->
-    <nav class="w-full p-8 bg-gray-700 text-gray-100 text-center mb-10 text-xl">
-        <ul class="inline-flex flex-row gap-8">
-            <li><a class="hover:underline" href="../locations/">Locations</a></li>
-            <li><a class="hover:underline" href="../devices/">Devices</a></li>
-        </ul>
-    </nav>
+
+    <Navbar/>
     <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12 flex justify-center">
-            <h4>Dispositivos Sigfox</h4>
+            <h4>Devices</h4>
         </div>
         <div class="col-span-12 flex items-center justify-around gap-3">
             <input
                 v-model="searchValue"
                 class="p-2 border rounded"
-                placeholder="Buscar Dispositivos..."
+                placeholder="Search device..."
             />
             <div>
                 <button class="rounded-lg px-4 py-2 bg-green-700 text-green-100 hover:bg-green-800 duration-300">
-                    Crear
+                    New
                 </button>
             </div>
         </div>
