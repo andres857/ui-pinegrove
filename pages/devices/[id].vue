@@ -11,7 +11,7 @@
                     <p><strong>Name: </strong>{{ deviceInfo.friendlyName }}</p>
                     <p><strong>Sigfox ID: </strong>{{ deviceInfo.SigfoxId }}</p>
                     <p><strong>Device Type: </strong>{{ deviceInfo.deviceType }}</p>
-                    <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.lastLocationUpdate) }}</p>
+                    <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p>
                 </div>
                 <div v-else>
                     <p>Loading...</p>
