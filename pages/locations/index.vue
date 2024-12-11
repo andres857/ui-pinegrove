@@ -3,9 +3,9 @@
     import axios from 'axios'
     import { useRuntimeConfig } from '#app'
     import { useRouter } from 'vue-router'
-
     import type { Header, Item, ClickRowArgument } from "vue3-easy-data-table";
     import Navbar from '~/components/Navbar.vue';
+    import Search from '~/components/Search.vue'
 
 
     // Definimos las interfaces para tipar nuestros datos
@@ -91,23 +91,13 @@
 </script>
 
 <template>
-    <Navbar/>
-    <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-12 flex justify-center ">
-            <h4>Ubicaciones</h4>
-        </div>
-        <div class="col-span-12 flex items-center justify-around gap-3">
-            <input
-                v-model="searchValue"
-                class="p-2 border rounded"
-                placeholder="Buscar Ubicaciones..."
-            />
-            <div>
-                <button class="rounded-lg px-4 py-2 bg-green-700 text-green-100 hover:bg-green-800 duration-300">Crear</button>
-            </div>
-        </div>
-        <div  class="col-span-12 flex justify-center items-center ">
-            <div class="max-w-4xl w-full"> 
+    <div>
+        <Navbar/>
+        <div class="grid gap-y-4 px-40">
+            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Ubications</h1>
+            <Search />
+            <button class="rounded-lg px-4 py-2 bg-green-700 text-green-100 hover:bg-green-800 duration-300">Crear</button>
+            <div class="w-full"> 
                 <EasyDataTable
                     @click-row="handleRowClick"
                     :headers="headers"
@@ -124,7 +114,6 @@
             </div>
         </div>
     </div>
-    
 </template>
 
 <style scoped>

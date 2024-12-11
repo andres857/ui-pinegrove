@@ -5,6 +5,7 @@ import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
 import type { Header } from "vue3-easy-data-table";
 import Navbar from '~/components/Navbar.vue';
+import Search from '~/components/Search.vue'
 
 interface Client {
     id: string;
@@ -106,20 +107,12 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="grid grid-cols-12 gap-4">
+    <div>
         <Navbar/>
-        <div class="col-span-12 flex justify-center">
-            <h4>Devices</h4>
-        </div>
-        <div class="col-span-12 flex items-center justify-around gap-3">
-            <input
-                v-model="searchValue"
-                class="p-2 border rounded"
-                placeholder="Search device..."
-            />
-        </div>
-        <div class="col-span-12 flex justify-center items-center">
-            <div class="max-w-4xl w-full"> 
+        <div class="grid gap-y-4 px-40">
+            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Devices</h1>
+            <Search />
+            <div class="w-full"> 
                 <EasyDataTable
                     @click-row="handleRowClick"
                     :headers="headers"

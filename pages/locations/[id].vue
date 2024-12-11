@@ -1,7 +1,7 @@
 <template lang="">
     <Navbar/>
-    <div class="grid grid-cols-3 grid-rows-5 h-dvh px-40 gap-x-10 pb-10 font-sans">
-        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3">Ubication</h1>
+    <div class="grid grid-cols-3 px-40 gap-x-10 pb-10 font-sans">
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3 mb-10">Ubication</h1>
         <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-4 overflow-hidden h-min">
 
             <!-- Iteramos sobre las propiedades usando Object.entries -->
@@ -23,13 +23,16 @@
             </div>
         </div>
         <div class="grid auto-rows-max row-span-4 col-span-2 w-full">
-            <select name="distance" class="appearance-node bg-gray-100 border-none text-gray-700 text-base rounded-md focus:ring-blue-500 focus:border-blue-500 p-4 [&>option]:text-gray-700 [&>option]:bg-gray-100 justify-self-end mb-7 h-fit">
-                <option disabled selected>Radius Meters</option>
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-                <option value="5000">5000</option>
-                <option value="10000">10000</option>
-            </select>
+            <div class="flex flex-row justify-self-end items-center gap-x-6 mb-5 h-fit">
+                <h3 class="text-xl font-semibold tracking-wider leading-tight text-gray-700">Radius Meters: </h3>
+                <select name="distance" class="appearance-none bg-gray-100 border-none text-gray-700 text-base rounded-md focus:ring-blue-500 focus:border-blue-500 p-4 [&>option]:text-gray-700 [&>option]:bg-gray-100">
+                    <option disabled selected>Select Radius</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                    <option value="5000">5000</option>
+                    <option value="10000">10000</option>
+                </select>
+            </div>
             <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-[calc(60vh-50px)]">
                 <Map 
                 v-if="locationInfo"
