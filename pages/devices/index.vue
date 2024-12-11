@@ -1,108 +1,147 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRuntimeConfig } from '#app';
-import { useRouter } from 'vue-router';
-import type { Header } from "vue3-easy-data-table";
-import Navbar from '~/components/Navbar.vue';
+  import { ref, onMounted } from 'vue';
+  import axios from 'axios';
+  import { useRuntimeConfig } from '#app';
+  import { useRouter } from 'vue-router';
+  import type { Header } from "vue3-easy-data-table";
+  import Navbar from '~/components/Navbar.vue';
 
-interface Client {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-}
+  interface Client {
+      id: string;
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+      isActive: boolean;
+      createdAt: string;
+      updatedAt: string;
+  }
 
-interface ComputedLocation {
-    lat: number;
-    lng: number;
-    radius: number;
-    source: number;
-    status: number;
-}
+  interface ComputedLocation {
+      lat: number;
+      lng: number;
+      radius: number;
+      source: number;
+      status: number;
+  }
 
-interface Duplicate {
-    bsId: string;
-    rssi: number;
-    nbRep: number;
-}
+  interface Duplicate {
+      bsId: string;
+      rssi: number;
+      nbRep: number;
+  }
 
-interface SigfoxMessage {
-    id: string;
-    messageType: string;
-    data: string;
-    lqi: string;
-    linkQuality: string;
-    operatorName: string;
-    countryCode: string;
-    duplicates: Duplicate[];
-    computedLocation: ComputedLocation;
-    createdAt: string;
-}
+  interface SigfoxMessage {
+      id: string;
+      messageType: string;
+      data: string;
+      lqi: string;
+      linkQuality: string;
+      operatorName: string;
+      countryCode: string;
+      duplicates: Duplicate[];
+      computedLocation: ComputedLocation;
+      createdAt: string;
+  }
 
-interface SigfoxDevice {
-    deviceId: string;
-    friendlyName: string;
-    SigfoxId: string;
-    deviceType: string;
-    deviceTypeId: string;
-    lastLatitude: string;
-    lastLongitude: string;
-    lastLocationUpdate: string;
-    client: Client;
-    messages: SigfoxMessage[];
-    locationHistory: any[]; // Puedes definir una interfaz específica si tienes la estructura
-}
+  interface SigfoxDevice {
+      deviceId: string;
+      friendlyName: string;
+      SigfoxId: string;
+      deviceType: string;
+      deviceTypeId: string;
+      lastLatitude: string;
+      lastLongitude: string;
+      lastLocationUpdate: string;
+      client: Client;
+      messages: SigfoxMessage[];
+      locationHistory: any[]; // Puedes definir una interfaz específica si tienes la estructura
+  }
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
-const router = useRouter()
+  const config = useRuntimeConfig()
+  const apiBase = config.public.apiBase
+  const router = useRouter()
 
-const searchValue = ref('')
-const itemsPerPage = ref(10)
-const serverItemsLength = ref(0)
+  const searchValue = ref('')
+  const itemsPerPage = ref(10)
+  const serverItemsLength = ref(0)
 
-const devices = ref<SigfoxDevice[]>([])
-const isLoading = ref(false)
-const error = ref<string | null>(null)
+  const devices = ref<SigfoxDevice[]>([])
+  const dataTable = ref()
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
 
-const headers: Header[] = [
-    { text: "Name", value: "friendlyName" },
-    { text: "Sigfox ID", value: "SigfoxId" },
-    { text: "Device Type", value: "deviceType" },
-    { text: "Last Latitude", value: "lastLatitude" },
-    { text: "Last Longitude", value: "lastLongitude" },
-    { text: "Last Update", value: "lastLocationUpdate" },
-    // { text: "Client", value: "client.name" }
-];
+  const headers: Header[] = [
+      { text: "Name", value: "friendlyName" },
+      { text: "Sigfox ID", value: "SigfoxId" },
+      { text: "Device Type", value: "deviceType" },
+      { text: "Last Latitude", value: "lastLatitude" },
+      { text: "Last Longitude", value: "lastLongitude" },
+      { 
+        text: "Last Update", 
+        value: "lastLocationUpdate",
+        sortable: true // Habilita el ordenamiento para esta columna
+    },
+  ];
 
-const fetchDevices = async () => {
-    isLoading.value = true
-    error.value = null
-    try {
-        const response = await axios.get<SigfoxDevice[]>(`${apiBase}/devices/`)
-        devices.value = response.data
-    } catch (e) {
-        error.value = 'Error al cargar los dispositivos'
-        console.error('Error fetching devices:', e)
-    } finally {
-        isLoading.value = false
-    }
-}
+  const fetchDevices = async () => {
+      isLoading.value = true
+      error.value = null
+      try {
+          const response = await axios.get<SigfoxDevice[]>(`${apiBase}/devices/`)
+          devices.value = response.data;
+          formatMessagesHistory();
+      } catch (e) {
+          error.value = 'Error al cargar los dispositivos'
+          console.error('Error fetching devices:', e)
+      } finally {
+          isLoading.value = false
+      }
+  }
 
-const handleRowClick = (item: SigfoxDevice) => {
-    router.push({
-        path: `/devices/${item.deviceId}`,
+  const handleRowClick = (item: SigfoxDevice) => {
+      router.push({
+          path: `/devices/${item.deviceId}`,
+      });
+  }
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return 'No disponible';
+    return new Date(dateString).toLocaleString('es-ES', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
     });
-}
+  }
 
-onMounted(() => {
-    fetchDevices()
-})
+  const formatMessagesHistory = () => {
+    if (!devices.value) return;
+    
+    // Función auxiliar para convertir fecha a timestamp
+    const getTimestamp = (dateString: string) => new Date(dateString).getTime();
+    
+    dataTable.value = devices.value
+        // Ordenamos los dispositivos por lastLocationUpdate
+        .sort((a: SigfoxDevice, b: SigfoxDevice) => {
+            // Convertimos las fechas a timestamps para una comparación correcta
+            const dateA = getTimestamp(a.lastLocationUpdate);
+            const dateB = getTimestamp(b.lastLocationUpdate);
+            return dateB - dateA; // Ordenamiento descendente
+        })
+        // Luego formateamos las fechas
+        .map((device: SigfoxDevice) => ({
+            ...device,
+            // Formateamos lastLocationUpdate para la visualización
+            lastLocationUpdate: formatDate(device.lastLocationUpdate)
+        }));
+  }
+
+  onMounted(() => {
+      fetchDevices()
+  })
 </script>
 
 <template>
@@ -124,9 +163,10 @@ onMounted(() => {
             </div>
             <div class="w-full mt-5"> 
                 <EasyDataTable
+                    v-if="dataTable"
                     @click-row="handleRowClick"
                     :headers="headers"
-                    :items="devices"
+                    :items="dataTable"
                     :search-value="searchValue"
                     :loading="isLoading"
                     :items-per-page="itemsPerPage"

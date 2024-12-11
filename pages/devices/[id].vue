@@ -11,7 +11,6 @@
                     <p><strong>Name: </strong>{{ deviceInfo.friendlyName }}</p>
                     <p><strong>Sigfox ID: </strong>{{ deviceInfo.SigfoxId }}</p>
                     <p><strong>Device Type: </strong>{{ deviceInfo.deviceType }}</p>
-                    <!-- <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p> -->
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p>
                 </div>
                 <div v-else>
@@ -114,20 +113,24 @@
             isLoading.value = false;
         }
     }
-    const formatMessagesHistory = async () => {
+
+    const formatMessagesHistory = () => {   
+        messagesHistory.value = deviceInfo.value.messages;
+
+        // Función auxiliar para convertir fecha a timestamp
+        const getTimestamp = (dateString: string) => new Date(dateString).getTime();
+
         messagesHistory.value = deviceInfo.value.messages
-        // Primero ordenamos los mensajes
-        .sort((a: any, b: any) => {
-            const dateA = new Date(a.createdAt).getTime();
-            const dateB = new Date(b.createdAt).getTime();
-            return dateB - dateA; // Ordenamiento descendente (más reciente primero)
-        })
-        // Luego aplicamos el formato
-        .map((message: any) => ({
-            ...message,
-            createdAt: formatDate(message.createdAt),
-            updatedAt: formatDate(message.updatedAt),
-        }));
+            .sort((a: any, b: any) => {
+                const dateA = getTimestamp(a.createdAt);
+                const dateB = getTimestamp(b.createdAt);
+                return dateB - dateA; // Ordenamiento descendente
+            })
+            .map((device: any) => ({
+                ...device,
+                createdAt: formatDate(device.createdAt),
+                updatedAt: formatDate(device.updatedAt),
+            }));
     }
 
     onMounted(() => {
