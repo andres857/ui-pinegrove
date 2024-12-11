@@ -118,11 +118,6 @@ onMounted(() => {
                 class="p-2 border rounded"
                 placeholder="Search device..."
             />
-            <div>
-                <button class="rounded-lg px-4 py-2 bg-green-700 text-green-100 hover:bg-green-800 duration-300">
-                    New
-                </button>
-            </div>
         </div>
         <div class="col-span-12 flex justify-center items-center">
             <div class="max-w-4xl w-full"> 
