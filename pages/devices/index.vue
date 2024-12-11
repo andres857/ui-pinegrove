@@ -106,9 +106,8 @@ onMounted(() => {
 </script>
 
 <template>
-
-    <Navbar/>
     <div class="grid grid-cols-12 gap-4">
+        <Navbar/>
         <div class="col-span-12 flex justify-center">
             <h4>Devices</h4>
         </div>
