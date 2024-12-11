@@ -66,6 +66,7 @@
     import Map from '~/components/GoogleMapView.vue'
     import type { Header } from "vue3-easy-data-table"
     import Navbar from '~/components/Navbar.vue'
+    import type { SigfoxDevice } from '~/components/types/index'
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase

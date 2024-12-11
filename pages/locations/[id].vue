@@ -23,6 +23,20 @@
                 <div v-else> 
                     <p>Cargando datos</p>
                 </div>
+                <div class="container mx-auto px-4">
+                    <form @submit.prevent="handleSubmit">
+                        <div v-for="(item, index) in formData" :key="index">
+                            <label for="name">{{ item.name }}</label>
+                            <input type="text" :id="item.name" v-model="formData[index].value" class="border border-gray-300 p-2 w-full" />
+                        </div>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Guardar
+                        </button>
+                        <button type="button" @click="cancelEdit" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                            Cancelar
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
         <div class="grid auto-rows-max row-span-4 col-span-2 w-full">
@@ -107,6 +121,26 @@
         }
     }
     onMounted(() => {
-        loadLocationDetails()
+        editLocationDetails(loadLocationDetails)
     })
+    //Aquí puedes ver la logica de la acción de editar datos
+    const editLocationDetails = async (callback) => {
+        await callback();
+
+        const formData = ref([
+            { name: 'name', value: locationInfoPrint.name },
+            { name: 'Address', value: locationInfoPrint.address }
+        ]);
+    }
+    
+
+    const handleSubmit = () => {
+        // Aquí puedes realizar la lógica para guardar los datos actualizados, por ejemplo, hacer una petición a un API
+        console.log('Datos actualizados:', formData.value);
+    };
+
+    const cancelEdit = () => {
+        // Aquí puedes restaurar los datos originales si es necesario
+        // ...
+    };
 </script>

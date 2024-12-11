@@ -5,58 +5,7 @@
   import { useRouter } from 'vue-router';
   import type { Header } from "vue3-easy-data-table";
   import Navbar from '~/components/Navbar.vue';
-
-  interface Client {
-      id: string;
-      name: string;
-      email: string;
-      phone: string;
-      address: string;
-      isActive: boolean;
-      createdAt: string;
-      updatedAt: string;
-  }
-
-  interface ComputedLocation {
-      lat: number;
-      lng: number;
-      radius: number;
-      source: number;
-      status: number;
-  }
-
-  interface Duplicate {
-      bsId: string;
-      rssi: number;
-      nbRep: number;
-  }
-
-  interface SigfoxMessage {
-      id: string;
-      messageType: string;
-      data: string;
-      lqi: string;
-      linkQuality: string;
-      operatorName: string;
-      countryCode: string;
-      duplicates: Duplicate[];
-      computedLocation: ComputedLocation;
-      createdAt: string;
-  }
-
-  interface SigfoxDevice {
-      deviceId: string;
-      friendlyName: string;
-      SigfoxId: string;
-      deviceType: string;
-      deviceTypeId: string;
-      lastLatitude: string;
-      lastLongitude: string;
-      lastLocationUpdate: string;
-      client: Client;
-      messages: SigfoxMessage[];
-      locationHistory: any[]; // Puedes definir una interfaz específica si tienes la estructura
-  }
+  import type { SigfoxDevice } from '~/components/types/index'
 
   const config = useRuntimeConfig()
   const apiBase = config.public.apiBase
