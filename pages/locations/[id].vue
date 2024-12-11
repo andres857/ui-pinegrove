@@ -6,7 +6,10 @@
 
             <!-- Iteramos sobre las propiedades usando Object.entries -->
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Information</h2>
-            <div class="py-8 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg">
+            <div class="py-8 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg relative group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-700 absolute right-0 mr-5 hover:text-gray-500 duration-300 cursor-pointer opacity-0 group-hover:opacity-100" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11 19A1 1 0 1011 21 1 1 0 1011 19zM15 19A1 1 0 1015 21 1 1 0 1015 19zM19 19A1 1 0 1019 21 1 1 0 1019 19zM10.517 5.892L3.369 16.29c-.103.149-.163.324-.174.505l-.193 3.144c-.021.351.143.688.432.886C3.604 20.94 3.801 21 4 21c.141 0 .283-.03.416-.091L7.28 19.6c.165-.075.306-.193.408-.343l7.161-10.417L10.517 5.892zM17.346 4.553c-.035-.119-.375-1.183-1.422-1.902-1.049-.721-2.166-.656-2.287-.645-.3.024-.574.183-.745.431L11.65 4.243l4.333 2.948 1.229-1.787C17.382 5.154 17.432 4.842 17.346 4.553z"/>
+                </svg>
                 <div v-if='locationInfoPrint' v-for="[key, value] in Object.entries(locationInfoPrint)" 
                     :key="key"
                     >
