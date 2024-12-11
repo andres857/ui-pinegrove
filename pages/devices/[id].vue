@@ -1,8 +1,8 @@
 <template lang="">
     <Navbar/>
-    <div class="grid grid-cols-3 grid-rows-5 px-40 gap-x-10 pb-10 font-sans">
-        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3">Device</h1>
-        <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-2 overflow-hidden h-min">
+    <div class="grid grid-cols-3 px-40 gap-x-10 pb-10 font-sans grid-flow-row">
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3 mb-10">Device</h1>
+        <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-3 overflow-hidden h-min">
 
             <!-- Información básica del dispositivo -->
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Information</h2>
@@ -19,7 +19,7 @@
             </div>
         </div>
          <!-- Mapa -->
-        <div class="row-span-2 col-span-2 w-full">
+        <div class="row-span-3 col-span-2 w-full">
             <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-[calc(60vh-50px)]">
                 <Map 
                     v-if="deviceInfo && deviceInfo.lastLatitude && deviceInfo.lastLongitude"
