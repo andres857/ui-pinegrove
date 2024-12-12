@@ -1,0 +1,27 @@
+services: 
+  nuxt-app:
+    build:
+      context: .
+      target: production
+    restart: always
+    environment:
+      - PUBLIC_API=${PUBLIC_API}
+      - API_GOOGLE_MAPS=${API_GOOGLE_MAPS}
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - nuxt-app
+    ports:
+      - "80:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+
+networks:
+  follow-network:
+    driver: bridge
