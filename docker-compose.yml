@@ -14,17 +14,20 @@ services:
     ports:
       - 1234:3000
 
-  # deploy:
-  #   build:
-  #     context: .
-  #     target: build
-  #   # restart: always
-  #   ports:
-  #     - 80:3000
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "1m"
+  ui-prod:
+    build:
+      context: .
+      target: production
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      - PUBLIC_API=${PUBLIC_API}
+      - API_GOOGLE_MAPS=${API_GOOGLE_MAPS}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
 
 networks:
   follow-network:
