@@ -7,6 +7,8 @@ services:
     environment:
       - PUBLIC_API=${PUBLIC_API}
       - API_GOOGLE_MAPS=${API_GOOGLE_MAPS}
+      - HOST=0.0.0.0
+
     volumes:
       - ./:/usr/src/app
       - /usr/src/app/node_modules
