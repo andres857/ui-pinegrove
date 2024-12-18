@@ -48,11 +48,11 @@
       }
   }
 
-  const handleRowClick = (item: SigfoxDevice) => {
-      router.push({
-          path: `/devices/${item.deviceId}`,
-      });
-  }
+    const handleRowClick = (item: SigfoxDevice) => {
+        router.push({
+            path: `/devices/${item.deviceId}`,
+        });
+    }
 
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'No disponible';

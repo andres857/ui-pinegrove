@@ -93,13 +93,13 @@
     <div>
         <Navbar/>
         <div class="grid gap-y-4 px-40">
-            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Ubications</h1>
+            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Locations</h1>
             <div class="flex flex-row justify-between">   
                 <div class="relative">
                     <input
                         v-model="searchValue"
                         class="px-5 py-3 pl-10 text-gray-700 placeholder-gray-400 bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md w-full"
-                        placeholder="Search device..."
+                        placeholder="Search location..."
                     />
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
