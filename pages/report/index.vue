@@ -1,28 +1,31 @@
 <template>
-    <EasyDataTable
-      :headers="headers"
-      :items="locations"
-      @expand-row="loadIntroduction"
-    >
-      <template #expand="item">
-
-        <div
-          v-if="item.introduction"
-          style="padding:25px 15px"
-        >
-            
+  <div>
+    <Navbar/>
+    <div class="grid gap-y-4 px-40">
+      <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Report</h1>
+      <div class="w-full mt-5"> 
         <EasyDataTable
-            :headers="deviceHeaders"
-            :items="deviceDetailsMap[item.id_location] || []"
-            :loading="loadingStates[item.id_location]"
-        />
-
-        </div>
-      </template>
-    </EasyDataTable>
-    <div>
+          :headers="headers"
+          :items="locations"
+          @expand-row="loadIntroduction"
+        >
+          <template #expand="item">
+            <div
+              v-if="item.introduction"
+              style="padding:25px 15px"
+            >       
+              <EasyDataTable
+                :headers="deviceHeaders"
+                :items="deviceDetailsMap[item.id_location] || []"
+                :loading="loadingStates[item.id_location]"
+              />
+            </div>
+          </template>
+        </EasyDataTable>
+      </div>
     </div>
-  </template>
+  </div>
+</template>
   
   <script lang="ts" setup>
     import { useRuntimeConfig } from '#app'

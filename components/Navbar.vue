@@ -3,6 +3,7 @@
         <ul class="inline-flex flex-row gap-8">
             <li><a class="hover:underline" href="../locations/">Locations</a></li>
             <li><a class="hover:underline" href="../devices/">Devices</a></li>
+            <li><a class="hover:underline" href="../report">Report</a></li>
         </ul>
     </nav>
 </template>
