@@ -11,11 +11,11 @@
           style="padding:25px 15px"
         >
             
-            <EasyDataTable
+        <EasyDataTable
             :headers="deviceHeaders"
-            :items="formatDevicesForTable(item.devices)"
-            />
-            
+            :items="deviceDetailsMap[item.id_location] || []"
+            :loading="loadingStates[item.id_location]"
+        />
 
         </div>
       </template>
@@ -59,13 +59,18 @@
     // Headers para la tabla de devices
     const deviceHeaders: Header[] = [
         { text: 'Device ID', value: 'id' },
-        { text: 'Index', value: 'index' }
+        { text: 'Name', value: 'name' },
+        { text: 'Device Type', value: 'deviceType' },
+        { text: 'Last Seen', value: 'lastLocationUpdate' },
+        { text: 'Status', value: 'status' }
     ];
 
     const locations = ref<Location[]>([])
-    const devices = ref<SigfoxDevice[]>([])
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+
+    const deviceDetailsMap = ref<Record<string, any[]>>({});
+    const loadingStates = ref<Record<string, boolean>>({});
 
     // Función para obtener las ubicaciones
     const fetchReport = async () => {
@@ -81,40 +86,66 @@
         } finally {
             isLoading.value = false
         }
-    }
-
-    const fetchDevices = async (id: any) => {
-        isLoading.value = true
-        error.value = null
-        try {
-            const response = await axios.get<SigfoxDevice>(`${apiBase}/devices/${id}`)
-            devices.value = response.data;
-            // formatMessagesHistory();
-        } catch (e) {
-            error.value = 'Error al cargar los dispositivos'
-            console.error('Error fetching devices:', e)
-        } finally {
-            isLoading.value = false
-        }
-    }
-
-    // Función para formatear los devices para la tabla anidada
-    const formatDevicesForTable = (devices: string[]) => {
-        return devices.map((deviceId, index) => ({
-            id: deviceId,
-            index: index + 1
-        }));
-    };
+    }    
 
     const loadIntroduction = async (index: number): Promise<void> => {
-        const expandedItem = locations.value[index];
-        if (!expandedItem.introduction) {
-            expandedItem.expandLoading = true;
-            // Aquí simplemente asignamos los devices al introduction para que se muestre
-            expandedItem.introduction = expandedItem.devices;
-            expandedItem.expandLoading = false;
-        }
+  const expandedItem = locations.value[index];
+  if (!expandedItem.introduction) {
+    expandedItem.expandLoading = true;
+    expandedItem.introduction = expandedItem.devices;
+    
+    if (!deviceDetailsMap.value[expandedItem.id_location]) {
+      loadingStates.value[expandedItem.id_location] = true;
+      
+      try {
+        const devicesPromises = expandedItem.devices.map(deviceId => 
+          axios.get<SigfoxDevice>(`${apiBase}/devices/${deviceId}`)
+        );
+        
+        const responses = await Promise.all(devicesPromises);
+        
+        deviceDetailsMap.value[expandedItem.id_location] = responses.map(response => {
+          // Calcular la diferencia en horas
+          const lastUpdate = new Date(response.data.lastLocationUpdate);
+          const now = new Date();
+          const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
+          
+          // Determinar el estado basado en la diferencia de tiempo
+          const status = diffHours <= 24 ? 'Connected' : 'Disconnected';
+
+          return {
+            id: response.data.SigfoxId,
+            name: response.data.name || '',
+            deviceType: response.data.deviceType || '',
+            lastLocationUpdate: formatDate(response.data.lastLocationUpdate),
+            status: status
+          };
+        });
+
+      } catch (e) {
+        error.value = 'Error al cargar los detalles de los dispositivos';
+        console.error('Error fetching device details:', e);
+      } finally {
+        loadingStates.value[expandedItem.id_location] = false;
+      }
+    }
+    
+    expandedItem.expandLoading = false;
+  }
+};
+
+    const formatDate = (dateString: string | null): string => {
+        if (!dateString) return 'No disponible';
+        return new Date(dateString).toLocaleString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
     };
+
 
 
 //     const formatDate = (dateString: string | null): string => {
