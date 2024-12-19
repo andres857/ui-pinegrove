@@ -18,7 +18,8 @@
                 :headers="deviceHeaders"
                 :items="deviceDetailsMap[item.id_location] || []"
                 :loading="loadingStates[item.id_location]"
-              />
+              >
+              </EasyDataTable>
             </div>
           </template>
         </EasyDataTable>
@@ -34,6 +35,7 @@
     import type { Header, Item } from "vue3-easy-data-table";
 
     import type { SigfoxDevice } from '~/components/types/index'
+import easyDataTable from '~/plugins/easy-data-table';
 
     interface Location {
         id: string
