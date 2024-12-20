@@ -12,6 +12,7 @@
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
     "axios": "^1.7.9",
+    "date-fns": "^4.1.0",
     "flowbite": "^2.5.2",
     "nuxt": "^3.14.1592",
     "vue": "latest",

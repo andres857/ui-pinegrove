@@ -19,6 +19,9 @@
                 :items="deviceDetailsMap[item.id_location] || []"
                 :loading="loadingStates[item.id_location]"
               >
+                <template #item-status="{ status }">
+                  <StatusIconDevice :status="status" style="margin-left: 8px;" />
+                </template>
               </EasyDataTable>
             </div>
           </template>
@@ -29,13 +32,15 @@
 </template>
   
   <script lang="ts" setup>
-    import { useRuntimeConfig } from '#app'
+    import { useRuntimeConfig } from '#app';
     import { ref } from "vue";
-    import axios from 'axios'
+    import axios from 'axios';
     import type { Header, Item } from "vue3-easy-data-table";
-
-    import type { SigfoxDevice } from '~/components/types/index'
-import easyDataTable from '~/plugins/easy-data-table';
+    import type { SigfoxDevice } from '~/components/types/index';
+    import StatusIconDevice from '~/components/StatusIconDevice.vue';
+    import { formatDistanceToNow, differenceInSeconds, differenceInMinutes, 
+         differenceInHours, differenceInDays, differenceInMonths } from 'date-fns'
+    import { es } from 'date-fns/locale';
 
     interface Location {
         id: string
@@ -63,11 +68,11 @@ import easyDataTable from '~/plugins/easy-data-table';
 
     // Headers para la tabla de devices
     const deviceHeaders: Header[] = [
+        { text: 'Status', value: 'status' },
         { text: 'Device ID', value: 'id' },
         { text: 'Name', value: 'name' },
         { text: 'Device Type', value: 'deviceType' },
         { text: 'Last Seen', value: 'lastLocationUpdate' },
-        { text: 'Status', value: 'status' }
     ];
 
     const locations = ref<Location[]>([])
@@ -91,52 +96,89 @@ import easyDataTable from '~/plugins/easy-data-table';
         } finally {
             isLoading.value = false
         }
-    }    
+    }
 
-    const loadIntroduction = async (index: number): Promise<void> => {
-  const expandedItem = locations.value[index];
-  if (!expandedItem.introduction) {
-    expandedItem.expandLoading = true;
-    expandedItem.introduction = expandedItem.devices;
-    
-    if (!deviceDetailsMap.value[expandedItem.id_location]) {
-      loadingStates.value[expandedItem.id_location] = true;
+    const formatDateLastSeen = (dateString: string | null): string => {
+      if (!dateString) return 'No disponible';
       
       try {
-        const devicesPromises = expandedItem.devices.map(deviceId => 
-          axios.get<SigfoxDevice>(`${apiBase}/devices/${deviceId}`)
-        );
-        
-        const responses = await Promise.all(devicesPromises);
-        
-        deviceDetailsMap.value[expandedItem.id_location] = responses.map(response => {
-          // Calcular la diferencia en horas
-          const lastUpdate = new Date(response.data.lastLocationUpdate);
+          const date = new Date(dateString);
           const now = new Date();
-          const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
           
-          // Determinar el estado basado en la diferencia de tiempo
-          const status = diffHours <= 24 ? 'Connected' : 'Disconnected';
+          if (isNaN(date.getTime())) {
+              return 'Fecha inválida';
+          }
 
-          return {
-            id: response.data.SigfoxId,
-            name: response.data.name || '',
-            deviceType: response.data.deviceType || '',
-            lastLocationUpdate: formatDate(response.data.lastLocationUpdate),
-            status: status
-          };
-        });
+          // Calculamos las diferentes unidades de tiempo
+          const secondsDiff = differenceInSeconds(now, date);
+          const minutesDiff = differenceInMinutes(now, date);
+          const hoursDiff = differenceInHours(now, date);
+          const daysDiff = differenceInDays(now, date);
+          const monthsDiff = differenceInMonths(now, date);
 
-      } catch (e) {
-        error.value = 'Error al cargar los detalles de los dispositivos';
-        console.error('Error fetching device details:', e);
-      } finally {
-        loadingStates.value[expandedItem.id_location] = false;
+          // Personalizamos el mensaje según el intervalo de tiempo
+          if (secondsDiff < 60) {
+              return 'hace unos segundos';
+          } else if (minutesDiff < 60) {
+              return `hace ${minutesDiff} ${minutesDiff === 1 ? 'minuto' : 'minutos'}`;
+          } else if (hoursDiff < 24) {
+              return `hace ${hoursDiff} ${hoursDiff === 1 ? 'hora' : 'horas'}`;
+          } else if (daysDiff < 30) {
+              return `hace ${daysDiff} ${daysDiff === 1 ? 'día' : 'días'}`;
+          } else {
+              return `hace ${monthsDiff} ${monthsDiff === 1 ? 'mes' : 'meses'}`;
+          }
+      } catch (error) {
+          console.error('Error al formatear la fecha:', error);
+          return 'Error en fecha';
       }
-    }
-    
-    expandedItem.expandLoading = false;
-  }
+    };
+
+
+    const loadIntroduction = async (index: number): Promise<void> => {
+      const expandedItem = locations.value[index];
+      if (!expandedItem.introduction) {
+        expandedItem.expandLoading = true;
+        expandedItem.introduction = expandedItem.devices;
+        
+        if (!deviceDetailsMap.value[expandedItem.id_location]) {
+          loadingStates.value[expandedItem.id_location] = true;
+          
+          try {
+            const devicesPromises = expandedItem.devices.map((deviceId:any) => 
+              axios.get<SigfoxDevice>(`${apiBase}/devices/${deviceId}`)
+            );
+            
+            const responses = await Promise.all(devicesPromises);
+            
+            deviceDetailsMap.value[expandedItem.id_location] = responses.map((response:any) => {
+              // Calcular la diferencia en horas
+              const lastUpdate = new Date(response.data.lastLocationUpdate);
+              const now = new Date();
+              const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
+              
+              // Determinar el estado basado en la diferencia de tiempo
+              const status = diffHours <= 24 ? 'Connected' : 'Disconnected';
+
+              return {
+                id: response.data.SigfoxId,
+                name: response.data.name || '',
+                deviceType: response.data.deviceType || '',
+                lastLocationUpdate: formatDateLastSeen(response.data.lastLocationUpdate),
+                status:status
+              };
+            });
+
+          } catch (e) {
+            error.value = 'Error al cargar los detalles de los dispositivos';
+            console.error('Error fetching device details:', e);
+          } finally {
+            loadingStates.value[expandedItem.id_location] = false;
+          }
+        }
+        
+        expandedItem.expandLoading = false;
+      }
 };
 
     const formatDate = (dateString: string | null): string => {
@@ -150,8 +192,6 @@ import easyDataTable from '~/plugins/easy-data-table';
             hour12: false
         });
     };
-
-
 
 //     const formatDate = (dateString: string | null): string => {
 //     if (!dateString) return 'No disponible';

@@ -72,29 +72,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps } from 'vue'
+  import { ref, defineProps } from 'vue';
 
-interface Props {
-  title?: string;
-}
+  interface Props {
+    title?: string;
+  }
 
-const props = withDefaults(defineProps<Props>(), {
-  title: 'Modal'
-})
+  const props = withDefaults(defineProps<Props>(), {
+    title: 'Modal'
+  })
 
-const isOpen = ref<boolean>(false)
+  const isOpen = ref<boolean>(false)
 
-const toggleModal = (): void => {
-  isOpen.value = !isOpen.value
-}
+  const toggleModal = (): void => {
+    isOpen.value = !isOpen.value;
+  }
 
-const closeModal = (): void => {
-  isOpen.value = false
-}
+  const closeModal = (): void => {
+    isOpen.value = false;
+  }
 
-defineExpose({
-  closeModal,
-  toggleModal,
-  isOpen
-})
+  defineExpose({
+    closeModal,
+    toggleModal,
+    isOpen
+  })
 </script>
