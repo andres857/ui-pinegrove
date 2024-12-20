@@ -59,7 +59,14 @@
       lng: Number(location.longitude)
     },
     icon: 'https://maps.gstatic.com/mapfiles/ms/icons/blue-dot.png',
-    title: location.name
+    title: location.name,
+    // Añadimos la etiqueta con el nombre de la ubicación
+    label: {
+      text: location.name,
+      color: '#071c5f', // Color del texto
+      fontSize: '16px',  // Tamaño del texto
+      fontWeight: 'bold' // Peso de la fuente
+    }
   })
   
   // Función para obtener las opciones del círculo para cada ubicación
