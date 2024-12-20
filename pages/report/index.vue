@@ -40,7 +40,6 @@
     import StatusIconDevice from '~/components/StatusIconDevice.vue';
     import { formatDistanceToNow, differenceInSeconds, differenceInMinutes, 
          differenceInHours, differenceInDays, differenceInMonths } from 'date-fns'
-    import { es } from 'date-fns/locale';
 
     interface Location {
         id: string
@@ -118,15 +117,15 @@
 
           // Personalizamos el mensaje según el intervalo de tiempo
           if (secondsDiff < 60) {
-              return 'hace unos segundos';
+              return 'a few seconds ago';
           } else if (minutesDiff < 60) {
-              return `hace ${minutesDiff} ${minutesDiff === 1 ? 'minuto' : 'minutos'}`;
+              return `${minutesDiff} ${minutesDiff === 1 ? 'minute' : 'minutes'} minutes ago`;
           } else if (hoursDiff < 24) {
-              return `hace ${hoursDiff} ${hoursDiff === 1 ? 'hora' : 'horas'}`;
+              return `${hoursDiff} ${hoursDiff === 1 ? 'hour' : 'hours'} hours ago`;
           } else if (daysDiff < 30) {
-              return `hace ${daysDiff} ${daysDiff === 1 ? 'día' : 'días'}`;
+              return `${daysDiff} ${daysDiff === 1 ? 'day' : 'days'} days ago`;
           } else {
-              return `hace ${monthsDiff} ${monthsDiff === 1 ? 'mes' : 'meses'}`;
+              return `${monthsDiff} ${monthsDiff === 1 ? 'month' : 'months'} months ago`;
           }
       } catch (error) {
           console.error('Error al formatear la fecha:', error);

@@ -5,7 +5,7 @@
     import { useRouter } from 'vue-router'
     import type { Header, Item, ClickRowArgument } from "vue3-easy-data-table";
     import Navbar from '~/components/Navbar.vue';
-
+    import MultipleLocationsMap from '~/components/MultipleLocations.vue'
 
     // Definimos las interfaces para tipar nuestros datos
     interface Client {
@@ -82,6 +82,13 @@
             path: `/locations/${item.id}`,
         });
     }
+
+    // Añadir el manejador para los clicks en los marcadores
+    const handleMarkerClick = (location) => {
+        router.push({
+            path: `/locations/${location.id}`,
+        });
+    }
     
     // Cargamos los datos cuando el componente se monta
     onMounted(() => {
@@ -94,6 +101,15 @@
         <Navbar/>
         <div class="grid gap-y-4 px-40">
             <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Locations</h1>
+
+            <!-- Contenedor del mapa -->
+            <div class="w-full h-[400px] mb-8 rounded-lg overflow-hidden shadow-lg">
+                <MultipleLocationsMap 
+                    :locations="locations"
+                    @marker-click="handleMarkerClick"
+                />
+            </div>
+            
             <div class="flex flex-row justify-between">   
                 <div class="relative">
                     <input
