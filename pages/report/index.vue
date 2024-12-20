@@ -133,7 +133,6 @@
       }
     };
 
-
     const loadIntroduction = async (index: number): Promise<void> => {
       const expandedItem = locations.value[index];
       if (!expandedItem.introduction) {
@@ -178,53 +177,8 @@
         
         expandedItem.expandLoading = false;
       }
-};
-
-    const formatDate = (dateString: string | null): string => {
-        if (!dateString) return 'No disponible';
-        return new Date(dateString).toLocaleString('es-ES', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
     };
 
-//     const formatDate = (dateString: string | null): string => {
-//     if (!dateString) return 'No disponible';
-//     return new Date(dateString).toLocaleString('es-ES', {
-//       day: '2-digit',
-//       month: 'long',
-//       year: 'numeric',
-//       hour: '2-digit',
-//       minute: '2-digit',
-//       hour12: false
-//     });
-//   }
-
-    // const formatMessagesHistory = () => {
-    //     if (!devices.value) return;
-
-    //     // Función auxiliar para convertir fecha a timestamp
-    //     const getTimestamp = (dateString: string) => new Date(dateString).getTime();
-
-    //     dataTable.value = devices.value
-    //         // Ordenamos los dispositivos por lastLocationUpdate
-    //         .sort((a: SigfoxDevice, b: SigfoxDevice) => {
-    //             // Convertimos las fechas a timestamps para una comparación correcta
-    //             const dateA = getTimestamp(a.lastLocationUpdate);
-    //             const dateB = getTimestamp(b.lastLocationUpdate);
-    //             return dateB - dateA; // Ordenamiento descendente
-    //         })
-    //         // Luego formateamos las fechas
-    //         .map((device: SigfoxDevice) => ({
-    //             ...device,
-    //             // Formateamos lastLocationUpdate para la visualización
-    //             lastLocationUpdate: formatDate(device.lastLocationUpdate)
-    //         }));
-    // }
 
     onMounted(() => {
         fetchReport()

@@ -43,6 +43,8 @@
 
     // Creamos las referencias reactivas necesarias
     const locations = ref<Location[]>([])
+    const devices = ref()
+
     const isLoading = ref(false)
     const error = ref<string | null>(null)
 
@@ -75,8 +77,22 @@
         }
     }
 
-    const handleRowClick = (item: any) => {
+    // Función para obtener las device
+    const fetchDevices = async () => {
+        isLoading.value = true
+        error.value = null
+        try {
+            const response = await axios.get<Location[]>(`${apiBase}/devices/client/51742590-5703-4a34-a2ba-f8a7bc863981`)
+            devices.value = response.data
+        } catch (e) {
+            error.value = 'Error al cargar las devices'
+            console.error('Error fetching locations:', e)
+        } finally {
+            isLoading.value = false
+        }
+    }
 
+    const handleRowClick = (item: any) => {
         console.log('clicked',item);
         router.push({
             path: `/locations/${item.id}`,
@@ -89,10 +105,18 @@
             path: `/locations/${location.id}`,
         });
     }
+
+    const handleDeviceClick = (device) => {
+        router.push({
+            path: `/devices/${device.deviceId}`,
+        });
+    }
+
     
     // Cargamos los datos cuando el componente se monta
     onMounted(() => {
         fetchLocations()
+        fetchDevices()
     })
 </script>
 
@@ -103,10 +127,12 @@
             <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Locations</h1>
 
             <!-- Contenedor del mapa -->
-            <div class="w-full h-[400px] mb-8 rounded-lg overflow-hidden shadow-lg">
+            <div class="w-full h-[800px] mb-8 rounded-lg overflow-hidden shadow-lg">
                 <MultipleLocationsMap 
                     :locations="locations"
-                    @marker-click="handleMarkerClick"
+                    :devices="devices"
+                    @location-click="handleLocationClick"
+                    @device-click="handleDeviceClick"
                 />
             </div>
             
