@@ -20,6 +20,8 @@
                 :loading="loadingStates[item.id_location]"
                 :sort-by="sortBy"
                 :sort-type="sortType"
+                show-index
+
               >
                 <template #item-status="{ status }">
                   <StatusIconDevice :status="status" style="margin-left: 8px;" />

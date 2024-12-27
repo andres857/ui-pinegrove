@@ -99,11 +99,10 @@
             <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-[calc(60vh-50px)]">
                 <Map 
                 v-if="locationInfo"
-                :latitude="Number(locationInfo.latitude)" 
-                :longitude="Number(locationInfo.longitude)"
-                :radius="Number(locationInfo.radiusMeters)"
+                    :latitude="Number(locationInfo.latitude)" 
+                    :longitude="Number(locationInfo.longitude)"
+                    :radius="Number(locationInfo.radiusMeters)"
                 />
-
                 <!-- Puedes mostrar un mensaje de carga mientras no haya datos -->
                 <div v-else>
                 Cargando información de la ubicación...

@@ -1,9 +1,60 @@
+<template>
+    <div>
+        <Navbar/>
+        <div class="grid gap-y-4 px-40">
+            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Locations</h1>
+
+            <!-- Contenedor del mapa -->
+            <div class="w-full h-[800px] mb-8 rounded-lg overflow-hidden shadow-lg">
+                <MultipleLocationsMap 
+                    :locations="locations"
+                    :devices="devices"
+                    @device-click="handleDeviceClick"
+                />
+            </div>
+            
+            <div class="flex flex-row justify-between">   
+                <div class="relative">
+                    <input
+                        v-model="searchValue"
+                        class="px-5 py-3 pl-10 text-gray-700 placeholder-gray-400 bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md w-full"
+                        placeholder="Search location..."
+                    />
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <button class="rounded-lg px-8 py-2 bg-gray-700 text-gray-100 hover:bg-gray-800 duration-300">Crear</button>
+            </div>
+            <div class="w-full mt-5"> 
+                <EasyDataTable
+                    @click-row="handleRowClick"
+                    :headers="headers"
+                    :items="locations"
+                    :search-value="searchValue"
+                    :loading="isLoading"
+                    :items-per-page="itemsPerPage"
+                    :rows-items="[5,10,15,20]"
+                    :rows-per-page="10"
+                    alternating
+                    buttons-pagination
+                    :sort-by="sortBy"
+                    :sort-type="sortType"
+                    @sort="handleSort"
+                />
+            </div>
+        </div>
+    </div>
+</template>
+
 <script setup lang="ts">
     import { ref, onMounted } from 'vue'
     import axios from 'axios'
     import { useRuntimeConfig } from '#app'
     import { useRouter } from 'vue-router'
-    import type { Header, Item, ClickRowArgument } from "vue3-easy-data-table";
+    import type { Header, Item, ClickRowArgument, SortType  } from "vue3-easy-data-table";
     import Navbar from '~/components/Navbar.vue';
     import MultipleLocationsMap from '~/components/MultipleLocations.vue'
 
@@ -21,6 +72,7 @@
 
     interface Location {
         id: string
+        index: number
         name: string
         latitude: string
         longitude: string
@@ -48,7 +100,11 @@
     const isLoading = ref(false)
     const error = ref<string | null>(null)
 
+    const sortBy = ref("index");  // Hacemos que sea reactivo
+    const sortType = ref<SortType>("asc");  // Ordenamiento ascendente por defecto
+
     const headers: Header[] = [
+        { text: "Index", value: "index", sortable: true }, 
         { text: "Name", value: "name" },
         { text: "Street", value: "address" },
         { text: "City", value: "city" },
@@ -68,7 +124,15 @@
         error.value = null
         try {
             const response = await axios.get<Location[]>(`${apiBase}/locations/`)
-            locations.value = response.data
+            // locations.value = response.data
+            locations.value = response.data.map((location: Location) => {
+                if (location.name === 'Not Seen' || location.name === 'In transit') {
+                    return null
+                }
+                return location
+            }).filter((location: Location | null) => location !== null)
+            console.log(locations.value);
+            
         } catch (e) {
             error.value = 'Error al cargar las ubicaciones'
             console.error('Error fetching locations:', e)
@@ -112,6 +176,10 @@
         });
     }
 
+    const handleSort = (event: { sortBy: string, sortType: SortType }) => {
+        sortBy.value = event.sortBy;
+        sortType.value = event.sortType;
+    };
     
     // Cargamos los datos cuando el componente se monta
     onMounted(() => {
@@ -120,55 +188,7 @@
     })
 </script>
 
-<template>
-    <div>
-        <Navbar/>
-        <div class="grid gap-y-4 px-40">
-            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Locations</h1>
 
-            <!-- Contenedor del mapa -->
-            <div class="w-full h-[800px] mb-8 rounded-lg overflow-hidden shadow-lg">
-                <MultipleLocationsMap 
-                    :locations="locations"
-                    :devices="devices"
-                    @location-click="handleLocationClick"
-                    @device-click="handleDeviceClick"
-                />
-            </div>
-            
-            <div class="flex flex-row justify-between">   
-                <div class="relative">
-                    <input
-                        v-model="searchValue"
-                        class="px-5 py-3 pl-10 text-gray-700 placeholder-gray-400 bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md w-full"
-                        placeholder="Search location..."
-                    />
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                </div>
-                <button class="rounded-lg px-8 py-2 bg-gray-700 text-gray-100 hover:bg-gray-800 duration-300">Crear</button>
-            </div>
-            <div class="w-full mt-5"> 
-                <EasyDataTable
-                    @click-row="handleRowClick"
-                    :headers="headers"
-                    :items="locations"
-                    :search-value="searchValue"
-                    :loading="isLoading"
-                    :items-per-page="itemsPerPage"
-                    :rows-items="[5,10,15,20]"
-                    :rows-per-page="10"
-                    alternating
-                    buttons-pagination
-                    show-index
-                />
-            </div>
-        </div>
-    </div>
-</template>
 
 <style scoped>
     :deep(.vue3-easy-data-table__tbody tr) {
