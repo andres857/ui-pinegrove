@@ -18,6 +18,8 @@
                 :headers="deviceHeaders"
                 :items="deviceDetailsMap[item.id_location] || []"
                 :loading="loadingStates[item.id_location]"
+                :sort-by="sortBy"
+                :sort-type="sortType"
               >
                 <template #item-status="{ status }">
                   <StatusIconDevice :status="status" style="margin-left: 8px;" />
@@ -35,11 +37,10 @@
     import { useRuntimeConfig } from '#app';
     import { ref } from "vue";
     import axios from 'axios';
-    import type { Header, Item } from "vue3-easy-data-table";
+    import type { Header, Item, SortType } from "vue3-easy-data-table";
     import type { SigfoxDevice } from '~/components/types/index';
     import StatusIconDevice from '~/components/StatusIconDevice.vue';
-    import { formatDistanceToNow, differenceInSeconds, differenceInMinutes, 
-         differenceInHours, differenceInDays, differenceInMonths } from 'date-fns'
+    import { formatDistanceToNow, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays, differenceInMonths } from 'date-fns';
 
     interface Location {
         id: string
@@ -56,19 +57,19 @@
     const apiBase = config.public.apiBase
 
     const headers: Header[] = [
-        { text: 'Location', value: 'location' },
-        { text: 'Micro base station ', value: 'mbs' },
-        { text: 'Devices at the location ', value: 'associated_devices' },
-        { text: 'City ', value: 'city' },
-        { text: 'Province ', value: 'province' },
-        { text: 'Address ', value: 'address' },
-        { text: 'Radius ', value: 'radius' },
+      { text: 'index', value: 'index' },
+      { text: 'Location', value: 'location' },
+      { text: 'Micro base station ', value: 'mbs' },
+      { text: 'Devices at the location ', value: 'associated_devices',sortable: true },
+      { text: 'City ', value: 'city' },
+      { text: 'Province ', value: 'province' },
+      { text: 'Address ', value: 'address' },
+      { text: 'Radius ', value: 'radius' },
     ];
 
     // Headers para la tabla de devices
     const deviceHeaders: Header[] = [
         { text: 'Status', value: 'status' },
-        { text: 'Device ID', value: 'id' },
         { text: 'Name', value: 'name' },
         { text: 'Device Type', value: 'deviceType' },
         { text: 'Last Seen', value: 'lastLocationUpdate' },
@@ -81,6 +82,8 @@
     const deviceDetailsMap = ref<Record<string, any[]>>({});
     const loadingStates = ref<Record<string, boolean>>({});
 
+    const sortBy = ref("associated_devices"); // Hacer reactivo
+    const sortType = ref<SortType>("asc"); // Hacer reactivo
     // Función para obtener las ubicaciones
     const fetchReport = async () => {
         isLoading.value = true
@@ -137,7 +140,8 @@
       const expandedItem = locations.value[index];
       if (!expandedItem.introduction) {
         expandedItem.expandLoading = true;
-        expandedItem.introduction = expandedItem.devices;
+        // expandedItem.introduction = expandedItem.devices;
+        expandedItem.introduction = expandedItem.associated_devices;
         
         if (!deviceDetailsMap.value[expandedItem.id_location]) {
           loadingStates.value[expandedItem.id_location] = true;
@@ -178,7 +182,6 @@
         expandedItem.expandLoading = false;
       }
     };
-
 
     onMounted(() => {
         fetchReport()
