@@ -90,6 +90,7 @@
     // Headers para la tabla de devices
     const deviceHeaders: Header[] = [
         { text: 'Status', value: 'status' },
+        { text: 'Device ID', value: 'id' },
         { text: 'Name', value: 'name' },
         { text: 'Device Type', value: 'deviceType' },
         { text: 'Last Seen', value: 'lastLocationUpdate' },
@@ -164,7 +165,6 @@
       const expandedItem = locations.value[index];
       if (!expandedItem.introduction) {
         expandedItem.expandLoading = true;
-        // expandedItem.introduction = expandedItem.devices;
         expandedItem.introduction = expandedItem.associated_devices;
         
         if (!deviceDetailsMap.value[expandedItem.id_location]) {
@@ -224,6 +224,7 @@
     const formatDeviceForExcel = (device: any, locationName: string) => {
       return {
         'Location': locationName,
+        'Device ID': device.id,
         'Device Name': device.name,
         'Device Type': device.deviceType,
         'Status': device.status,
@@ -241,7 +242,7 @@
         const locationSheet = XLSX.utils.json_to_sheet(
           locations.value.map(formatLocationForExcel)
         );
-        XLSX.utils.book_append_sheet(wb, locationSheet, 'Report');
+        XLSX.utils.book_append_sheet(wb, locationSheet, 'Locations');
 
         // Create devices sheet with detailed information
         const allDevices: any[] = [];
