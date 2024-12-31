@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { PropType, watch } from 'vue'
+import { PropType, watch } from 'vue';
 
 const props = defineProps({
   status: {

@@ -2,11 +2,29 @@
   <div>
     <Navbar/>
     <div class="grid gap-y-4 px-40">
-      <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Report</h1>
-      <div class="w-full mt-5"> 
+      <div class="flex justify-between items-center ">
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-6 ">Report</h1>
+        
+      </div>
+      <div class="flex justify-between items-center">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Search Location..."
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <button 
+            @click="downloadExcel"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <i class="fas fa-download"></i> Download Report
+        </button>
+      </div>
+      <div class="w-full mt-3"> 
         <EasyDataTable
           :headers="headers"
           :items="locations"
+          :search-value="search"
           @expand-row="loadIntroduction"
         >
           <template #expand="item">
@@ -21,7 +39,6 @@
                 :sort-by="sortBy"
                 :sort-type="sortType"
                 show-index
-
               >
                 <template #item-status="{ status }">
                   <StatusIconDevice :status="status" style="margin-left: 8px;" />
@@ -39,10 +56,11 @@
     import { useRuntimeConfig } from '#app';
     import { ref } from "vue";
     import axios from 'axios';
+    import * as XLSX from 'xlsx';
     import type { Header, Item, SortType } from "vue3-easy-data-table";
     import type { SigfoxDevice } from '~/components/types/index';
     import StatusIconDevice from '~/components/StatusIconDevice.vue';
-    import { formatDistanceToNow, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays, differenceInMonths } from 'date-fns';
+    import {  differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays, differenceInMonths } from 'date-fns';
 
     interface Location {
         id: string
@@ -77,6 +95,9 @@
         { text: 'Last Seen', value: 'lastLocationUpdate' },
     ];
 
+    const search = ref("");
+    const searchField = ref(["location", "city", "province", "address"]);
+
     const locations = ref<Location[]>([])
     const isLoading = ref(false)
     const error = ref<string | null>(null)
@@ -84,9 +105,10 @@
     const deviceDetailsMap = ref<Record<string, any[]>>({});
     const loadingStates = ref<Record<string, boolean>>({});
 
-    const sortBy = ref("associated_devices"); // Hacer reactivo
-    const sortType = ref<SortType>("asc"); // Hacer reactivo
-    // Función para obtener las ubicaciones
+    const sortBy = ref("associated_devices"); 
+    const sortType = ref<SortType>("asc"); 
+
+    // obtener las ubicaciones
     const fetchReport = async () => {
         isLoading.value = true
         error.value = null        
@@ -162,7 +184,7 @@
               const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
               
               // Determinar el estado basado en la diferencia de tiempo
-              const status = diffHours <= 24 ? 'Connected' : 'Disconnected';
+              const status = diffHours <= 48 ? 'Connected' : 'Disconnected';
 
               return {
                 id: response.data.SigfoxId,
@@ -185,7 +207,76 @@
       }
     };
 
+    // Function to format location data for Excel
+    const formatLocationForExcel = (location: any) => {
+      return {
+        'Location': location.location,
+        'Micro base station': location.mbs,
+        'Devices at location': location.associated_devices,
+        'City': location.city,
+        'Province': location.province,
+        'Address': location.address,
+        'Radius (meters)': location.radius
+      };
+    };
+
+    // Function to format device data for Excel
+    const formatDeviceForExcel = (device: any, locationName: string) => {
+      return {
+        'Location': locationName,
+        'Device Name': device.name,
+        'Device Type': device.deviceType,
+        'Status': device.status,
+        'Last Seen': device.lastLocationUpdate
+      };
+    };
+
+    // Main download function
+    const downloadExcel = async () => {
+      try {
+        // Create workbook and worksheets
+        const wb = XLSX.utils.book_new();
+        
+        // Format locations data for first sheet
+        const locationSheet = XLSX.utils.json_to_sheet(
+          locations.value.map(formatLocationForExcel)
+        );
+        XLSX.utils.book_append_sheet(wb, locationSheet, 'Report');
+
+        // Create devices sheet with detailed information
+        const allDevices: any[] = [];
+        
+        // Gather all devices with their location information
+        for (const location of locations.value) {
+          if (location.devices?.length) {
+            // If devices haven't been loaded yet, load them
+            if (!deviceDetailsMap.value[location.id_location]) {
+              await loadIntroduction(locations.value.indexOf(location));
+            }
+            
+            const locationDevices = deviceDetailsMap.value[location.id_location] || [];
+            locationDevices.forEach(device => {
+              allDevices.push(formatDeviceForExcel(device, location.location));
+            });
+          }
+        }
+
+        // Add devices sheet if there are devices
+        if (allDevices.length) {
+          const devicesSheet = XLSX.utils.json_to_sheet(allDevices);
+          XLSX.utils.book_append_sheet(wb, devicesSheet, 'Devices');
+        }
+
+        // Generate and download the file
+        XLSX.writeFile(wb, 'report.xlsx');
+      } catch (error) {
+        console.error('Error generating Excel file:', error);
+        // You might want to add some user feedback here
+      }
+    };
+
     onMounted(() => {
-        fetchReport()
+        // fetchReport()
+        fetchReport() 
     })
   </script>
