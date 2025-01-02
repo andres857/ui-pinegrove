@@ -3,8 +3,7 @@
     <Navbar/>
     <div class="grid gap-y-4 px-40">
       <div class="flex justify-between items-center ">
-        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-6 ">Report</h1>
-        
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-6 ">Report</h1>        
       </div>
       <div class="flex justify-between items-center">
         <input
@@ -15,9 +14,7 @@
         />
         <button 
             @click="downloadExcel"
-            332d68
             class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-[#332d68] transition-colors flex items-center gap-2"
-            
           >
             <i class="fas fa-download"></i> Download Report
         </button>
@@ -93,7 +90,6 @@
       { text: 'City ', value: 'city' },
       { text: 'Province ', value: 'province' },
       { text: 'Address ', value: 'address' },
-      //{ text: 'Radius ', value: 'radius' },
     ];
 
     // Headers para la tabla de devices
@@ -106,7 +102,6 @@
     ];
 
     const search = ref("");
-    const searchField = ref(["location", "city", "province", "address"]);
 
     const locations = ref<Location[]>([])
     const isLoading = ref(false)
@@ -144,7 +139,6 @@
           if (isNaN(date.getTime())) {
               return 'Fecha inválida';
           }
-
           // Calculamos las diferentes unidades de tiempo
           const secondsDiff = differenceInSeconds(now, date);
           const minutesDiff = differenceInMinutes(now, date);
@@ -211,17 +205,14 @@
             loadingStates.value[expandedItem.id_location] = false;
           }
         }
-        
         expandedItem.expandLoading = false;
       }
     };
 
     const handleSort = (headerId: string) => {
-      // Si hacemos clic en la misma columna, cambiamos el tipo de ordenación
       if (sortBy.value === headerId) {
         sortType.value = sortType.value === 'desc' ? 'asc' : 'desc';
       } else {
-        // Si hacemos clic en una columna diferente, establecemos la nueva columna y ordenamos ascendentemente
         sortBy.value = headerId;
         sortType.value = 'asc';
       }
@@ -240,7 +231,6 @@
         'City': location.city,
         'Province': location.province,
         'Address': location.address,
-        'Radius (meters)': location.radius
       };
     };
 
