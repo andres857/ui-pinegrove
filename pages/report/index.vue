@@ -35,7 +35,6 @@
           :body-row-class-name="bodyRowClassNameFunction"
           :rows-per-page="30"
           :rows-items="[10, 20, 30, 40, 50]"
-
         >
           <template #expand="item">
             <div
