@@ -15,7 +15,9 @@
         />
         <button 
             @click="downloadExcel"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+            332d68
+            class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-[#332d68] transition-colors flex items-center gap-2"
+            
           >
             <i class="fas fa-download"></i> Download Report
         </button>
@@ -25,7 +27,15 @@
           :headers="headers"
           :items="locations"
           :search-value="search"
+          :sort-by="sortBy"           
+          :sort-type="sortType"   
+          @click-sort="handleSort"
           @expand-row="loadIntroduction"
+          table-class-name="customize-table"
+          :body-row-class-name="bodyRowClassNameFunction"
+          :rows-per-page="30"
+          :rows-items="[10, 20, 30, 40, 50]"
+
         >
           <template #expand="item">
             <div
@@ -77,14 +87,14 @@
     const apiBase = config.public.apiBase
 
     const headers: Header[] = [
-      { text: 'index', value: 'index' },
+      { text: 'index', value: 'index' ,sortable: true },
       { text: 'Location', value: 'location' },
       { text: 'Micro base station ', value: 'mbs' },
       { text: 'Devices at the location ', value: 'associated_devices',sortable: true },
       { text: 'City ', value: 'city' },
       { text: 'Province ', value: 'province' },
       { text: 'Address ', value: 'address' },
-      { text: 'Radius ', value: 'radius' },
+      //{ text: 'Radius ', value: 'radius' },
     ];
 
     // Headers para la tabla de devices
@@ -106,7 +116,7 @@
     const deviceDetailsMap = ref<Record<string, any[]>>({});
     const loadingStates = ref<Record<string, boolean>>({});
 
-    const sortBy = ref("associated_devices"); 
+    const sortBy = ref("index"); 
     const sortType = ref<SortType>("asc"); 
 
     // obtener las ubicaciones
@@ -207,6 +217,21 @@
       }
     };
 
+    const handleSort = (headerId: string) => {
+      // Si hacemos clic en la misma columna, cambiamos el tipo de ordenación
+      if (sortBy.value === headerId) {
+        sortType.value = sortType.value === 'desc' ? 'asc' : 'desc';
+      } else {
+        // Si hacemos clic en una columna diferente, establecemos la nueva columna y ordenamos ascendentemente
+        sortBy.value = headerId;
+        sortType.value = 'asc';
+      }
+    };
+
+    const bodyRowClassNameFunction = (item: any, rowNumber: number): string => {
+      return item.index === 0 ? 'first-row': ''
+    };
+
     // Function to format location data for Excel
     const formatLocationForExcel = (location: any) => {
       return {
@@ -281,3 +306,21 @@
         fetchReport() 
     })
   </script>
+
+<style>
+  .customize-table {
+    --easy-table-body-row-hover-background-color: #332d68;
+    --easy-table-body-row-hover-font-color: #fff;
+  }
+  .first-row {
+    --easy-table-body-row-background-color: #332d68;
+    --easy-table-body-row-font-color: #fff;
+  }
+
+  /* .first-row:hover td {
+    background-color: #5b539c !important;
+    --easy-table-body-row-hover-font-color: #fff;
+
+  } */
+
+</style>
