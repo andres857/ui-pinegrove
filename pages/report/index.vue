@@ -14,7 +14,7 @@
         />
         <button 
             @click="downloadExcel"
-            class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-[#332d68] transition-colors flex items-center gap-2"
+            class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
             <i class="fas fa-download"></i> Download Report
         </button>
@@ -30,8 +30,6 @@
           @expand-row="loadIntroduction"
           table-class-name="customize-table"
           :body-row-class-name="bodyRowClassNameFunction"
-          :rows-per-page="30"
-          :rows-items="[10, 20, 30, 40, 50]"
         >
           <template #expand="item">
             <div
@@ -119,7 +117,11 @@
         error.value = null        
         try {
             const response = await axios.get<Location[]>(`${apiBase}/locations/report/51742590-5703-4a34-a2ba-f8a7bc863981`)
-            locations.value = response.data
+            // locations.value = response.data
+            locations.value = response.data.sort((a, b) => {
+                // Asumiendo que el índice es un número
+                return (a.index || 0) - (b.index || 0)
+            })
             console.log(response.data);
         } catch (e) {
             error.value = 'Error al cargar las ubicaciones'
@@ -209,17 +211,8 @@
       }
     };
 
-    const handleSort = (headerId: string) => {
-      if (sortBy.value === headerId) {
-        sortType.value = sortType.value === 'desc' ? 'asc' : 'desc';
-      } else {
-        sortBy.value = headerId;
-        sortType.value = 'asc';
-      }
-    };
-
-    const bodyRowClassNameFunction = (item: any, rowNumber: number): string => {
-      return item.index === 0 ? 'first-row': ''
+    const bodyRowClassNameFunction = (item: any): string => {
+      return item.index === 0 ? 'first-row' : '';
     };
 
     // Function to format location data for Excel
@@ -297,19 +290,29 @@
   </script>
 
 <style>
-  .customize-table {
-    --easy-table-body-row-hover-background-color: #332d68;
-    --easy-table-body-row-hover-font-color: #fff;
-  }
-  .first-row {
-    --easy-table-body-row-background-color: #332d68;
-    --easy-table-body-row-font-color: #fff;
-  }
+/* Esta clase personaliza los colores de la tabla */
+.customize-table {
+  --easy-table-border: 1px solid #ddd;
+  --easy-table-row-border: 1px solid #ddd;
+  
+  /* Color cuando se hace hover sobre una fila */
+  --easy-table-body-row-hover-background-color: #332d68;
+  --easy-table-body-row-hover-font-color: #fff;
+}
 
-  /* .first-row:hover td {
-    background-color: #5b539c !important;
-    --easy-table-body-row-hover-font-color: #fff;
+/* Esta clase define el estilo para la primera fila */
+.first-row {
+  --easy-table-body-row-background-color: #332d68;
+  --easy-table-body-row-font-color: #fff;
+}
 
-  } */
+/* Podemos añadir más estilos personalizados para mejorar la apariencia */
+.customize-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
 
+.customize-table td {
+  padding: 12px 8px;
+}
 </style>
