@@ -1,16 +1,17 @@
-<template lang="">
+<template>
     <Navbar/>
-    <div class="grid grid-cols-3 px-40 gap-x-10 pb-10 font-sans grid-flow-row">
-        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3 mb-10">Device</h1>
-        <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-3 overflow-hidden h-min">
-
-            <!-- Información básica del dispositivo -->
-            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Information</h2>
-            <div class="py-8 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg">
-                <div v-if="deviceInfo">
-                    <p><strong>Name: </strong>{{ deviceInfo.friendlyName }}</p>
-                    <p><strong>Sigfox ID: </strong>{{ deviceInfo.SigfoxId }}</p>
-                    <p><strong>Device Type: </strong>{{ deviceInfo.deviceType }}</p>
+    <div class="grid grid-cols-12 px-40 gap-y-2 pb-10 font-sans grid-flow-row">
+        
+        <h3 class="text-2xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-4xl self-center col-span-3 mb-7">Device</h3>
+        
+        <!-- device information -->
+        <div class="col-span-12 bg-gray-700 rounded-lg shadow-lg [&>strong]:font-bold text-gray-100 text-left overflow-hidden w-full h-min mb-5">
+            <div class="py-2 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg">
+                <div v-if="deviceInfo" class="flex items-center gap-4">
+                    <svg width="20px" height="20px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="8" cy="8" r="8" fill="#008000"/>
+                    </svg>
+                    <p><strong>Device ID: </strong>{{ deviceInfo.SigfoxId }}</p>
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p>
                 </div>
                 <div v-else>
@@ -18,22 +19,58 @@
                 </div>
             </div>
         </div>
-         <!-- Mapa -->
-        <div class="row-span-3 col-span-2 w-full">
+
+        <!-- Timeline -->
+        <div class="col-span-3 p-10">
+            <ol class="relative border-s border-gray-300">                  
+                <li 
+                    v-for="(location, index) in locationHistory" 
+                    :key="index" 
+                    class="mb-10 ms-6 cursor-pointer" 
+                    @click="setActiveLocation(index)"
+                >
+                    <span 
+                        class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
+                        :class="getStatusClass(location.status)"
+                    >
+                        <svg :fill="getStatusColor(location.status)" height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
+                            viewBox="0 0 434.174 434.174" xml:space="preserve">
+                            <g>
+                                <path d="M217.087,119.397c-24.813,0-45,20.187-45,45s20.187,45,45,45s45-20.187,45-45S241.901,119.397,217.087,119.397z"/>
+                                <path d="M217.087,0c-91.874,0-166.62,74.745-166.62,166.619c0,38.93,13.421,74.781,35.878,103.177l130.742,164.378l130.742-164.378
+                                    c22.457-28.396,35.878-64.247,35.878-103.177C383.707,74.745,308.961,0,217.087,0z M217.087,239.397c-41.355,0-75-33.645-75-75
+                                    s33.645-75,75-75s75,33.645,75,75S258.443,239.397,217.087,239.397z"/>
+                            </g>
+                        </svg>
+                    </span>
+                    <h3 class="mb-1 text-lg font-semibold text-gray-900" :class="{'font-bold': activeLocationIndex === index}">
+                        {{ location.label }}
+                    </h3>
+                    <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
+                        {{ location.time }}
+                    </time>
+                </li>
+            </ol>
+        </div>
+        
+        <!-- Map -->
+        <div class="col-span-9 w-full">
             <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-[calc(60vh-50px)]">
                 <Map 
-                    v-if="deviceInfo && deviceInfo.lastLatitude && deviceInfo.lastLongitude"
-                    :latitude="Number(deviceInfo.lastLatitude)"
-                    :longitude="Number(deviceInfo.lastLongitude)"
-                    :radius="2000"
+                    v-if="locationHistory.length > 0"
+                    :locations="locationHistory"
+                    :active-index="activeLocationIndex"
+                    :show-radius-circles="false"
+                    @marker-click="setActiveLocation"
                 />
                 <div v-else>
-                    No hay información de dispositivos disponible
+                    No location information available
                 </div>
             </div>
         </div>
-        <!-- Tabla de mensajes -->
-        <div class="col-span-3 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
+
+        <!-- Message Table -->
+        <div class="col-span-12 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Messages</h2>
             <EasyDataTable
                 v-if="deviceInfo"
@@ -47,6 +84,7 @@
                 alternating
                 buttons-pagination
                 show-index
+                @click:row="handleRowClick"
             >
                 <template #header="header">
                     <p class="text-gray-700 text-base">
@@ -61,9 +99,9 @@
 <script setup lang="ts">
     import { useRuntimeConfig } from '#app'
     import axios from 'axios'
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, computed } from 'vue'
     import { useRoute } from 'vue-router'
-    import Map from '~/components/GoogleMapView.vue'
+    import Map from '~/components/MapMultipleLocations.vue'
     import type { Header } from "vue3-easy-data-table"
     import Navbar from '~/components/Navbar.vue'
     import type { SigfoxDevice } from '~/components/types/index'
@@ -75,23 +113,60 @@
 
     const deviceInfo = ref<SigfoxDevice | null>(null)
     const isLoading = ref(false)
-    const messagesHistory = ref()
+    const messagesHistory = ref([])
     const searchValue = ref('')
     const itemsPerPage = ref(10)
+    const activeLocationIndex = ref(0)
 
-    const messageHeaders: Header[] = [
-        { text: "Fecha", value: "createdAt", sortable: true },
-        { text: "Tipo", value: "messageType" },
-        { text: "Data", value: "data" },
-        { text: "LQI", value: "lqi" },
-        { text: "Operador", value: "operatorName" },
-        { text: "Latitud", value: "computedLocation.lat" },
-        { text: "Longitud", value: "computedLocation.lng" },
-        { text: "Radio", value: "computedLocation.radius" }
+    // Status definitions for timeline and markers
+    const locationStatuses = [
+        { value: 'origin', label: 'Origin', color: '#00AA55', bgClass: 'bg-green-100' },
+        { value: 'intransit', label: 'In transit', color: '#88C700', bgClass: 'bg-green-100' },
+        { value: 'warning', label: 'Warning', color: '#FFAA00', bgClass: 'bg-yellow-100' },
+        { value: 'alert', label: 'Alert', color: '#FF5555', bgClass: 'bg-red-100' }
     ]
 
+    const messageHeaders: Header[] = [
+        { text: "Date", value: "createdAt", sortable: true },
+        { text: "Type", value: "messageType" },
+        { text: "Data", value: "data" },
+        { text: "LQI", value: "lqi" },
+        { text: "Operator", value: "operatorName" },
+        { text: "Latitude", value: "computedLocation.lat" },
+        { text: "Longitude", value: "computedLocation.lng" },
+        { text: "Radius", value: "computedLocation.radius" }
+    ]
+
+    // Compute location history from messages
+    const locationHistory = computed(() => {
+        if (!deviceInfo.value || !deviceInfo.value.messages || deviceInfo.value.messages.length === 0) {
+            return [];
+        }
+
+        // Get last 10 messages with location data
+        return deviceInfo.value.messages
+            .filter(msg => msg.computedLocation && msg.computedLocation.lat && msg.computedLocation.lng)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 10)
+            .map((msg, index) => {
+                // Determine status based on index (you can use your own logic here)
+                const statusIndex = Math.min(index, locationStatuses.length - 1);
+                const status = locationStatuses[statusIndex];
+                
+                return {
+                    lat: Number(msg.computedLocation.lat),
+                    lng: Number(msg.computedLocation.lng),
+                    radius: Number(msg.computedLocation.radius) || 1000,
+                    time: formatDate(msg.createdAt),
+                    status: status.value,
+                    label: index === 0 ? 'Latest Position' : status.label,
+                    messageId: msg.id // Store message ID for reference
+                };
+            });
+    });
+
     const formatDate = (dateString: string | null): string => {
-        if (!dateString) return 'No disponible';
+        if (!dateString) return 'Not available';
         return new Date(dateString).toLocaleString('es-ES', {
             day: '2-digit',
             month: 'long',
@@ -103,40 +178,71 @@
     }
 
     const loadDeviceDetails = async () => {
-        isLoading.value = true
+        isLoading.value = true;
         try {
             const response = await axios.get(`${apiBase}/devices/${deviceId}`);
             deviceInfo.value = response.data;
-            formatMessagesHistory()
+            formatMessagesHistory();
         } catch (error) {
-            console.error('Error al cargar los detalles del dispositivo:', error);
+            console.error('Error loading device details:', error);
         } finally {
             isLoading.value = false;
         }
     }
 
-    const formatMessagesHistory = () => {   
-        messagesHistory.value = deviceInfo.value.messages;
+    const formatMessagesHistory = () => {
+        if (!deviceInfo.value || !deviceInfo.value.messages) {
+            messagesHistory.value = [];
+            return;
+        }
 
-        // Función auxiliar para convertir fecha a timestamp
-        const getTimestamp = (dateString: string) => new Date(dateString).getTime();
-
+        // Sort messages by date (newest first)
         messagesHistory.value = deviceInfo.value.messages
             .sort((a: any, b: any) => {
-                const dateA = getTimestamp(a.createdAt);
-                const dateB = getTimestamp(b.createdAt);
-                return dateB - dateA; // Ordenamiento descendente
+                const dateA = new Date(a.createdAt).getTime();
+                const dateB = new Date(b.createdAt).getTime();
+                return dateB - dateA; // Descending order
             })
-            .map((device: any) => ({
-                ...device,
-                createdAt: formatDate(device.createdAt),
-                updatedAt: formatDate(device.updatedAt),
+            .map((message: any) => ({
+                ...message,
+                createdAt: formatDate(message.createdAt),
+                updatedAt: formatDate(message.updatedAt),
+                // Format nested properties for the data table
+                'computedLocation.lat': message.computedLocation?.lat || 'N/A',
+                'computedLocation.lng': message.computedLocation?.lng || 'N/A',
+                'computedLocation.radius': message.computedLocation?.radius || 'N/A',
             }));
     }
 
+    // Get status color for timeline icons
+    const getStatusColor = (status) => {
+        const found = locationStatuses.find(s => s.value === status);
+        return found ? found.color : '#888888';
+    };
+
+    // Get status class for timeline icons
+    const getStatusClass = (status) => {
+        const found = locationStatuses.find(s => s.value === status);
+        return found ? found.bgClass : 'bg-gray-100';
+    };
+
+    // Set active location
+    const setActiveLocation = (index) => {
+        activeLocationIndex.value = index;
+    };
+
+    // Handle table row click to highlight corresponding location
+    const handleRowClick = (item) => {
+        // Find the index in locationHistory that corresponds to this message
+        const index = locationHistory.value.findIndex(loc => loc.messageId === item.id);
+        if (index !== -1) {
+            setActiveLocation(index);
+        }
+    };
+
     onMounted(() => {
-        loadDeviceDetails()
-    })
+        loadDeviceDetails();
+    });
 </script>
 
 <style scoped>
