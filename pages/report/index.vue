@@ -13,10 +13,17 @@
           class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         <button 
+<<<<<<< HEAD
           @click="downloadExcel"
           class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-[#332d68] transition-colors flex items-center gap-2"
         >
           <i class="fas fa-download"></i> Download Report
+=======
+            @click="downloadExcel"
+            class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <i class="fas fa-download"></i> Download Report
+>>>>>>> 7343857a4cf718b3ccde8b62c162b0d95021a412
         </button>
       </div>
       <div class="w-full mt-3"> 
@@ -30,9 +37,12 @@
           @expand-row="loadIntroduction"
           table-class-name="customize-table"
           :body-row-class-name="bodyRowClassNameFunction"
+<<<<<<< HEAD
           :rows-per-page="30"
           :rows-items="[10, 20, 30, 40, 50]"
           :expand-rows="true"
+=======
+>>>>>>> 7343857a4cf718b3ccde8b62c162b0d95021a412
         >
           <template #expand="item">
             <div style="padding:25px 15px">       
