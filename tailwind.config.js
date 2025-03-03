@@ -13,6 +13,17 @@ export default {
   },
   plugins: [
     require('flowbite/plugin')
-  ],
+  ]
 }
 
+// import tailwindcss from "@tailwindcss/vite";
+
+// export default defineNuxtConfig({
+//   devtools: { enabled: true },
+//   css: ['~/assets/css/input.css'], // you'll have to create this file
+//   vite: {
+//     plugins: [
+//       tailwindcss(),
+//     ],
+//   },
+// });
