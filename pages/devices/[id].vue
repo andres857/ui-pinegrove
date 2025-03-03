@@ -12,6 +12,8 @@
                         <circle cx="8" cy="8" r="8" fill="#008000"/>
                     </svg>
                     <p><strong>Device ID: </strong>{{ deviceInfo.SigfoxId }}</p>
+                    <p><strong>Type: </strong> Carter Braccio </p>
+                    <p><strong>Container: </strong> 214 </p>
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p>
                 </div>
                 <div v-else>
@@ -106,9 +108,8 @@
 
         </div>
 
-
         <!-- Message Table -->
-        <!-- <div class="col-span-12 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
+        <div class="col-span-12 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Messages</h2>
             <EasyDataTable
                 v-if="deviceInfo"
@@ -130,7 +131,7 @@
                     </p>
                 </template>
             </EasyDataTable>
-        </div> -->
+        </div>
 
     </div>
 </template>
@@ -167,6 +168,7 @@
 
     const messageHeaders: Header[] = [
         { text: "Date", value: "createdAt", sortable: true },
+        { text: "Location", value: "" },
         { text: "Latitude", value: "computedLocation.lat" },
         { text: "Longitude", value: "computedLocation.lng" },
     ]
