@@ -108,8 +108,8 @@
 
         </div>
 
-        <!-- Message Table -->
-        <div class="col-span-12 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
+        <!-- ubications Table -->
+        <div class="col-span-6 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Ubications</h2>
             <EasyDataTable
                 v-if="deviceInfo"
@@ -197,8 +197,6 @@
     const messageHeaders: Header[] = [
         { text: "Date", value: "timestamp", sortable: true },
         { text: "Location", value: "locationName" },
-        { text: "Latitude", value: "latitude" },
-        { text: "Longitude", value: "longitude" },
     ]
 
     // Compute location history from the new API response format
