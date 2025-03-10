@@ -11,10 +11,10 @@
                     <svg width="20px" height="20px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="8" cy="8" r="8" fill="#008000"/>
                     </svg>
-                    <p><strong>Device ID: </strong>{{ deviceInfo.SigfoxId }}</p>
+                    <p><strong>Device ID: </strong>{{ deviceInfo[0]?.device?.SigfoxId || 'N/A' }}</p>
                     <p><strong>Type: </strong> Carter Braccio </p>
                     <p><strong>Container: </strong> 214 </p>
-                    <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.messages[0].createdAt) }}</p>
+                    <p><strong>Last Update: </strong>{{ formatDate(deviceInfo[0]?.timestamp) }}</p>
                 </div>
                 <div v-else>
                     <p>Loading...</p>
@@ -51,7 +51,7 @@
         <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4">
 
             <!-- Timeline -->
-            <div class=" col-span-3 gap-4 p-5 bg-slate-500 h-[90%]">
+            <div class=" col-span-3 gap-4 p-5  h-[90%]">
                 <!-- Contenedor scrolleable con altura fija -->
                 <div class="overflow-y-auto custom-scrollbar p-5">
                     <ol class="relative border-s border-gray-300">                  
@@ -110,7 +110,7 @@
 
         <!-- Message Table -->
         <div class="col-span-12 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
-            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Messages</h2>
+            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Ubications</h2>
             <EasyDataTable
                 v-if="deviceInfo"
                 :headers="messageHeaders"
@@ -144,14 +144,41 @@
     import Map from '~/components/MapMultipleLocations.vue'
     import type { Header } from "vue3-easy-data-table"
     import Navbar from '~/components/Navbar.vue'
-    import type { SigfoxDevice } from '~/components/types/index'
+    
+    // Updated type definition for new API response
+    interface DeviceLocation {
+        id: string;
+        latitude: string;
+        longitude: string;
+        locationName: string;
+        timestamp: string;
+        device: {
+            deviceId: string;
+            SigfoxId: string;
+            deviceType: string;
+            lastLatitude: string;
+            lastLongitude: string;
+            lastLocationUpdate: string;
+            [key: string]: any;
+        };
+        location: {
+            id: string;
+            name: string;
+            address: string;
+            country: string;
+            city: string;
+            radiusMeters: number;
+            [key: string]: any;
+        };
+    }
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
     const route = useRoute()
     const deviceId = route.params.id as string
 
-    const deviceInfo = ref<SigfoxDevice | null>(null)
+    // Updated ref type for the new API response format
+    const deviceInfo = ref<DeviceLocation[] | null>(null)
     const isLoading = ref(false)
     const messagesHistory = ref([])
     const searchValue = ref('')
@@ -166,37 +193,45 @@
         { value: 'alert', label: 'Alert', color: '#FF5555', bgClass: 'bg-red-100' }
     ]
 
+    // Updated headers to show location name instead of coordinates
     const messageHeaders: Header[] = [
-        { text: "Date", value: "createdAt", sortable: true },
-        { text: "Location", value: "" },
-        { text: "Latitude", value: "computedLocation.lat" },
-        { text: "Longitude", value: "computedLocation.lng" },
+        { text: "Date", value: "timestamp", sortable: true },
+        { text: "Location", value: "locationName" },
+        { text: "Latitude", value: "latitude" },
+        { text: "Longitude", value: "longitude" },
     ]
 
-    // Compute location history from messages
+    // Compute location history from the new API response format
     const locationHistory = computed(() => {
-        if (!deviceInfo.value || !deviceInfo.value.messages || deviceInfo.value.messages.length === 0) {
+        if (!deviceInfo.value || deviceInfo.value.length === 0) {
             return [];
         }
 
-        // Get last 10 messages with location data
-        return deviceInfo.value.messages
-            .filter(msg => msg.computedLocation && msg.computedLocation.lat && msg.computedLocation.lng)
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        // Use the new data structure to create location history
+        return deviceInfo.value
+            .filter(loc => loc.latitude && loc.longitude)
             .slice(0, 10)
-            .map((msg, index) => {
-                // Determine status based on index (you can use your own logic here)
-                const statusIndex = Math.min(index, locationStatuses.length - 1);
-                const status = locationStatuses[statusIndex];
+            .map((loc, index) => {
+                // Determine status based on locationName or index
+                let statusValue = 'origin';
+                if (loc.locationName.toLowerCase().includes('transit')) {
+                    statusValue = 'intransit';
+                } else if (index > 5) {
+                    statusValue = 'alert';
+                } else if (index > 2) {
+                    statusValue = 'warning';
+                }
+                
+                const status = locationStatuses.find(s => s.value === statusValue) || locationStatuses[0];
                 
                 return {
-                    lat: Number(msg.computedLocation.lat),
-                    lng: Number(msg.computedLocation.lng),
-                    radius: Number(msg.computedLocation.radius) || 1000,
-                    time: formatDate(msg.createdAt),
-                    status: status.value,
-                    label: index === 0 ? 'Latest Position' : status.label,
-                    messageId: msg.id // Store message ID for reference
+                    lat: Number(loc.latitude),
+                    lng: Number(loc.longitude),
+                    radius: loc.location?.radiusMeters || 1000,
+                    time: formatDate(loc.timestamp),
+                    status: statusValue,
+                    label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
+                    messageId: loc.id // Store message ID for reference
                 };
             });
     });
@@ -216,7 +251,9 @@
     const loadDeviceDetails = async () => {
         isLoading.value = true;
         try {
-            const response = await axios.get(`${apiBase}/devices/${deviceId}`);
+            // Updated API endpoint
+            const response = await axios.get(`${apiBase}/locations/history/device/${deviceId}`);
+            console.log('Device details:', response.data);
             deviceInfo.value = response.data;
             formatMessagesHistory();
         } catch (error) {
@@ -224,29 +261,28 @@
         } finally {
             isLoading.value = false;
         }
-    }
+    };
 
     const formatMessagesHistory = () => {
-        if (!deviceInfo.value || !deviceInfo.value.messages) {
+        if (!deviceInfo.value || deviceInfo.value.length === 0) {
             messagesHistory.value = [];
             return;
         }
 
-        // Sort messages by date (newest first)
-        messagesHistory.value = deviceInfo.value.messages
-            .sort((a: any, b: any) => {
-                const dateA = new Date(a.createdAt).getTime();
-                const dateB = new Date(b.createdAt).getTime();
-                return dateB - dateA; // Descending order
+        // Format the device locations for the data table
+        messagesHistory.value = deviceInfo.value
+            .sort((a, b) => {
+                const dateA = new Date(a.timestamp).getTime();
+                const dateB = new Date(b.timestamp).getTime();
+                return dateB - dateA; // Descending order (newest first)
             })
-            .map((message: any) => ({
-                ...message,
-                createdAt: formatDate(message.createdAt),
-                updatedAt: formatDate(message.updatedAt),
-                // Format nested properties for the data table
-                'computedLocation.lat': message.computedLocation?.lat || 'N/A',
-                'computedLocation.lng': message.computedLocation?.lng || 'N/A',
-                'computedLocation.radius': message.computedLocation?.radius || 'N/A',
+            .map((loc) => ({
+                id: loc.id,
+                timestamp: formatDate(loc.timestamp),
+                locationName: loc.locationName,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                // Include any other fields needed for the table
             }));
     }
 

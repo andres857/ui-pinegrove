@@ -48,4 +48,5 @@ export interface SigfoxDevice {
     client: Client;
     messages: SigfoxMessage[];
     locationHistory: any[]; // Puedes definir una interfaz específica si tienes la estructura
+    location?: string;
 }
