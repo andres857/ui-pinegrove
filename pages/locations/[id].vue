@@ -1,4 +1,4 @@
-<template lang="">
+<template >
     <Navbar/>
     <div class="grid grid-cols-3 px-40 gap-x-10 pb-10 font-sans">
         <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3 mb-10">Ubication</h1>
@@ -16,7 +16,7 @@
                     </template>
                     <!-- TITULO PERSONALIZADO -->
                     <template #title>
-                        Actualizar Datos de Mapeo
+                        Update data
                     </template>
                     <!-- CONTENIDO DEL MODAL -->
                     <div v-if='formData'>
@@ -63,7 +63,7 @@
                             type="submit"
                             class="w-full bg-gray-700 text-gray-100 font-bold py-2 px-4 rounded-md hover:bg-gray-800 transition-colors"
                             >
-                            Actualizar Datos
+                            Update
                             </button>
                         </form>
                     </div>
