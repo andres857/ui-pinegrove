@@ -12,8 +12,8 @@
                         <circle cx="8" cy="8" r="8" fill="#008000"/>
                     </svg>
                     <p><strong>Device ID: </strong>{{ deviceInfo[0]?.device?.SigfoxId || 'N/A' }}</p>
-                    <p><strong>Type: </strong> Carter Braccio </p>
-                    <p><strong>Container: </strong> 214 </p>
+                    <p><strong>Type: </strong> {{ deviceInfo[0]?.device?.aliasDeviceType || 'N/A' }} </p>
+                    <p><strong>Container: </strong> {{ deviceInfo[0]?.device?.friendlyName || 'N/A' }} </p>
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo[0]?.timestamp) }}</p>
                 </div>
                 <div v-else>
@@ -23,7 +23,7 @@
         </div>
 
         <!-- search block -->
-        <div class=" col-span-12">
+        <!-- <div class=" col-span-12">
             <div class=" w-full flex justify-end mb-4">
                 <div id="date-range-picker" date-rangepicker class="flex items-center">
                     <div class="relative">
@@ -45,15 +45,15 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
 
         <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4">
 
             <!-- Timeline -->
-            <div class=" col-span-3 gap-4 p-5  h-[90%]">
-                <!-- Contenedor scrolleable con altura fija -->
+            <div class="col-span-3 gap-4 p-5 h-[90%]">
                 <div class="overflow-y-auto custom-scrollbar p-5">
+                    <!-- {{ locationHistory }} -->
                     <ol class="relative border-s border-gray-300">                  
                         <li 
                             v-for="(location, index) in locationHistory" 
@@ -197,6 +197,8 @@
     const messageHeaders: Header[] = [
         { text: "Date", value: "timestamp", sortable: true },
         { text: "Location", value: "locationName" },
+        // { text: "Lat", value: "latitude" },
+        // { text: "Long", value: "longitude" }
     ]
 
     // Compute location history from the new API response format
@@ -223,13 +225,15 @@
                 const status = locationStatuses.find(s => s.value === statusValue) || locationStatuses[0];
                 
                 return {
-                    lat: Number(loc.latitude),
-                    lng: Number(loc.longitude),
+                    // lat: Number(loc.latitude),
+                    // lng: Number(loc.longitude),
+                    lat: loc.locationName == 'In transit' ? Number(loc.latitude) : Number(loc.location.latitude),
+                    lng: loc.locationName == 'In transit' ? Number(loc.longitude) : Number(loc.location.longitude),
                     radius: loc.location?.radiusMeters || 1000,
                     time: formatDate(loc.timestamp),
                     status: statusValue,
                     label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
-                    messageId: loc.id // Store message ID for reference
+                    messageId: loc.id 
                 };
             });
     });
@@ -274,13 +278,12 @@
                 const dateB = new Date(b.timestamp).getTime();
                 return dateB - dateA; // Descending order (newest first)
             })
-            .map((loc) => ({
+            .map((loc:any) => ({
                 id: loc.id,
                 timestamp: formatDate(loc.timestamp),
                 locationName: loc.locationName,
-                latitude: loc.latitude,
-                longitude: loc.longitude,
-                // Include any other fields needed for the table
+                latitude: loc.locationName == 'In transit' ? loc.latitude : loc.location.latitude,
+                longitude: loc.locationName == 'In transit' ? loc.longitude : loc.location.longitude,
             }));
     }
 
