@@ -17,7 +17,6 @@
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo[0]?.timestamp) }}</p>
                     
                     <!-- Usar el modal con el icono como trigger -->
-                    <!-- Usar el modal con el icono como trigger -->
                     <div>
                         <ModalToggle ref="deviceModal" title="Edit Device Information">
                             <template #trigger>
@@ -78,9 +77,8 @@
                 </div>
             </div>
         </div>
-
-                           
-        <!-- search block -->
+          
+        <!-- search block (commented out) -->
         <!-- <div class=" col-span-12">
             <div class=" w-full flex justify-end mb-4">
                 <div id="date-range-picker" date-rangepicker class="flex items-center">
@@ -105,23 +103,22 @@
             </div>
         </div> -->
 
-
-        <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4">
-
+        <!-- Map and Timeline Container -->
+        <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4 mb-10">
             <!-- Timeline -->
-            <div class="col-span-3 gap-4 p-5 h-[90%]">
-                <div class="overflow-y-auto custom-scrollbar p-5">
-                    <!-- {{ locationHistory }} -->
-                    <ol class="relative border-s border-gray-300">                  
+            <div class="col-span-3 bg-white rounded-lg shadow-sm p-5 flex flex-col h-full">
+                <h4 class="font-semibold text-gray-700 mb-3">Location History</h4>
+                <div class="h-80 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                    <ol class="relative border-s border-gray-300 ">                  
                         <li 
                             v-for="(location, index) in locationHistory" 
                             :key="index" 
-                            class="mb-10 ms-6 cursor-pointer" 
+                            class=" m-6 ms-6 cursor-pointer" 
                             @click="setActiveLocation(index)"
                         >
                             <span 
-                                class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
-                                :class="getStatusClass(location.status)"
+                            class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
+                            :class="getStatusClass(location.status)"
                             >
                                 <svg :fill="getStatusColor(location.status)" height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
                                     viewBox="0 0 434.174 434.174" xml:space="preserve">
@@ -139,17 +136,18 @@
                             <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
                                 {{ location.time }}
                             </time>
+
                         </li>
                     </ol>
                 </div>
                 <!-- Indicador de scroll opcional -->
-                <div v-if="locationHistory.length > 5" class="text-center text-xs text-gray-500 h-[10%]">
+                <div v-if="locationHistory.length > 10" class="text-center text-xs text-gray-500 mt-2">
                     <p>Scroll to see more locations</p>
                 </div>
             </div>
 
             <!-- Map -->
-            <div class=" col-span-9 w-full h-[90%]">
+            <div class="col-span-9 w-full">
                 <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-full">
                     <Map 
                         v-if="locationHistory.length > 0"
@@ -158,39 +156,42 @@
                         :show-radius-circles="false"
                         @marker-click="setActiveLocation"
                     />
-                    <div v-else>
+                    <div v-else class="flex items-center justify-center h-full text-gray-500">
                         No location information available
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <!-- ubications Table -->
-        <div class="col-span-6 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
+        <!-- Ubications Table -->
+        <div class="col-span-12 lg:col-span-6 bg-gray-100 rounded-lg shadow-lg text-gray-700">
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Ubications</h2>
-            <EasyDataTable
-                v-if="deviceInfo"
-                :headers="messageHeaders"
-                :items="messagesHistory"
-                :search-value="searchValue"
-                :loading="isLoading"
-                :items-per-page="itemsPerPage"
-                :rows-items="[5,10,15,20]"
-                :rows-per-page="10"
-                alternating
-                buttons-pagination
-                show-index
-                @click:row="handleRowClick"
-            >
-                <template #header="header">
-                    <p class="text-gray-700 text-base">
-                        {{ header.text }}
-                    </p>
-                </template>
-            </EasyDataTable>
+            <div class="overflow-hidden max-h-96">
+                <EasyDataTable
+                    v-if="deviceInfo"
+                    :headers="messageHeaders"
+                    :items="messagesHistory"
+                    :search-value="searchValue"
+                    :loading="isLoading"
+                    :items-per-page="itemsPerPage"
+                    :rows-items="[5,10,15,20]"
+                    :rows-per-page="10"
+                    alternating
+                    buttons-pagination
+                    show-index
+                    @click:row="handleRowClick"
+                >
+                    <template #header="header">
+                        <p class="text-gray-700 text-base">
+                            {{ header.text }}
+                        </p>
+                    </template>
+                </EasyDataTable>
+                <div v-else class="p-5 text-center text-gray-500">
+                    Loading device data...
+                </div>
+            </div>
         </div>
-
     </div>
 </template>
 
