@@ -17,74 +17,68 @@
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo[0]?.timestamp) }}</p>
                     
                     <!-- Usar el modal con el icono como trigger -->
-                    <BaseModal ref="deviceModal" title="Edit Device Information">
-                    <template #trigger>
-                        <svg class="cursor-pointer" width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" fill="#ffffff"/>
-                        </svg>
-                    </template>
-                    
-                    <!-- Contenido del modal - Formulario para editar el dispositivo -->
-                    <form @submit.prevent="updateDevice">
-                            <div class="space-y-4">
-                                <!-- Friendly Name -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Container Name</label>
-                                    <input 
-                                    v-model="editedDevice.friendlyName" 
-                                    type="text" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    />
-                                </div>
-                            
-                                <!-- Device Type Alias -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Device Type</label>
-                                    <input 
-                                    v-model="editedDevice.aliasDeviceType" 
-                                    type="text" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    />
-                                </div>
-                            
-                                <!-- Sigfox ID (read-only) -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Sigfox ID</label>
-                                    <input 
-                                    v-model="editedDevice.SigfoxId" 
-                                    type="text" 
-                                    readonly
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <!-- Buttons -->
-                            <div class="mt-6 flex justify-end space-x-3">
-                                <button 
-                                    type="button" 
-                                    @click="$refs.deviceModal.closeModal()" 
-                                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                                >
-                                    Cancel
+                    <div>
+                        <ModalToggle ref="deviceModal" title="Edit Device Information">
+                            <template #trigger>
+                                <button>
+                                    <svg class="cursor-pointer" width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" fill="#ffffff"/>
+                                    </svg>
                                 </button>
-                                <button 
-                                    type="submit" 
-                                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                                >
-                                    Save Changes
-                                </button>
-                            </div>
-                        </form>
-                    </BaseModal>
+                            </template>
+                            
+                            <!-- Contenido del modal - Formulario para editar el dispositivo -->
+                            <form @submit.prevent="updateDevice">
+                                <div class="space-y-4">
+                                    <!-- Friendly Name -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Container Name</label>
+                                        <input 
+                                            v-model="editedDevice.friendlyName" 
+                                            type="text" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
+                                        />
+                                    </div>
+                                    
+                                    <!-- Device Type Alias -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Device Type</label>
+                                        <input 
+                                            v-model="editedDevice.aliasDeviceType" 
+                                            type="text" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <!-- Buttons -->
+                                <div class="mt-6 flex justify-end space-x-3">
+                                    <button 
+                                        type="button" 
+                                        @click="$refs.deviceModal.closeModal()" 
+                                        class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#374151] hover:bg-[#5c6c86] hover:text-white"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#374151] hover:bg-[#5c6c86] hover:text-white"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </ModalToggle>
+                    </div>
+
                 </div>
                 <div v-else>
                     <p>Loading...</p>
                 </div>
             </div>
         </div>
-
-        <!-- search block -->
+          
+        <!-- search block (commented out) -->
         <!-- <div class=" col-span-12">
             <div class=" w-full flex justify-end mb-4">
                 <div id="date-range-picker" date-rangepicker class="flex items-center">
@@ -109,23 +103,22 @@
             </div>
         </div> -->
 
-
-        <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4">
-
+        <!-- Map and Timeline Container -->
+        <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4 mb-10">
             <!-- Timeline -->
-            <div class="col-span-3 gap-4 p-5 h-[90%]">
-                <div class="overflow-y-auto custom-scrollbar p-5">
-                    <!-- {{ locationHistory }} -->
-                    <ol class="relative border-s border-gray-300">                  
+            <div class="col-span-3 bg-white rounded-lg shadow-sm p-5 flex flex-col h-full">
+                <h4 class="font-semibold text-gray-700 mb-3">Location History</h4>
+                <div class="h-80 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                    <ol class="relative border-s border-gray-300 ">                  
                         <li 
                             v-for="(location, index) in locationHistory" 
                             :key="index" 
-                            class="mb-10 ms-6 cursor-pointer" 
+                            class=" m-6 ms-6 cursor-pointer" 
                             @click="setActiveLocation(index)"
                         >
                             <span 
-                                class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
-                                :class="getStatusClass(location.status)"
+                            class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
+                            :class="getStatusClass(location.status)"
                             >
                                 <svg :fill="getStatusColor(location.status)" height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
                                     viewBox="0 0 434.174 434.174" xml:space="preserve">
@@ -143,17 +136,18 @@
                             <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
                                 {{ location.time }}
                             </time>
+
                         </li>
                     </ol>
                 </div>
                 <!-- Indicador de scroll opcional -->
-                <div v-if="locationHistory.length > 5" class="text-center text-xs text-gray-500 h-[10%]">
+                <div v-if="locationHistory.length > 10" class="text-center text-xs text-gray-500 mt-2">
                     <p>Scroll to see more locations</p>
                 </div>
             </div>
 
             <!-- Map -->
-            <div class=" col-span-9 w-full h-[90%]">
+            <div class="col-span-9 w-full">
                 <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-full">
                     <Map 
                         v-if="locationHistory.length > 0"
@@ -162,50 +156,54 @@
                         :show-radius-circles="false"
                         @marker-click="setActiveLocation"
                     />
-                    <div v-else>
+                    <div v-else class="flex items-center justify-center h-full text-gray-500">
                         No location information available
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <!-- ubications Table -->
-        <div class="col-span-6 row-span-2 mt-10 bg-gray-100 rounded-lg shadow-lg text-gray-700 overflow-hidden h-min">
+        <!-- Ubications Table -->
+        <div class="col-span-12 lg:col-span-6 bg-gray-100 rounded-lg shadow-lg text-gray-700">
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Ubications</h2>
-            <EasyDataTable
-                v-if="deviceInfo"
-                :headers="messageHeaders"
-                :items="messagesHistory"
-                :search-value="searchValue"
-                :loading="isLoading"
-                :items-per-page="itemsPerPage"
-                :rows-items="[5,10,15,20]"
-                :rows-per-page="10"
-                alternating
-                buttons-pagination
-                show-index
-                @click:row="handleRowClick"
-            >
-                <template #header="header">
-                    <p class="text-gray-700 text-base">
-                        {{ header.text }}
-                    </p>
-                </template>
-            </EasyDataTable>
+            <div class="overflow-hidden max-h-96">
+                <EasyDataTable
+                    v-if="deviceInfo"
+                    :headers="messageHeaders"
+                    :items="messagesHistory"
+                    :search-value="searchValue"
+                    :loading="isLoading"
+                    :items-per-page="itemsPerPage"
+                    :rows-items="[5,10,15,20]"
+                    :rows-per-page="10"
+                    alternating
+                    buttons-pagination
+                    show-index
+                    @click:row="handleRowClick"
+                >
+                    <template #header="header">
+                        <p class="text-gray-700 text-base">
+                            {{ header.text }}
+                        </p>
+                    </template>
+                </EasyDataTable>
+                <div v-else class="p-5 text-center text-gray-500">
+                    Loading device data...
+                </div>
+            </div>
         </div>
-
     </div>
 </template>
 
 <script setup lang="ts">
     import { useRuntimeConfig } from '#app'
     import axios from 'axios'
-    import { ref, onMounted, computed } from 'vue'
+    import { ref, onMounted, computed, reactive, watch } from 'vue'
     import { useRoute } from 'vue-router'
     import Map from '~/components/MapMultipleLocations.vue'
     import type { Header } from "vue3-easy-data-table"
     import Navbar from '~/components/Navbar.vue'
+    import ModalToggle from '~/components/ModalToggle.vue'
     
     // Updated type definition for new API response
     interface DeviceLocation {
@@ -262,6 +260,61 @@
         // { text: "Lat", value: "latitude" },
         // { text: "Long", value: "longitude" }
     ]
+
+    // Para manejar la edición del dispositivo
+    const deviceModal = ref(null);
+    const editedDevice = reactive({
+        deviceId: '',
+        friendlyName: '',
+        aliasDeviceType: '',
+        SigfoxId: ''
+    });
+
+    // Función para preparar la edición cuando se abra el modal
+    const prepareEditDevice = () => {
+        if (deviceInfo.value && deviceInfo.value[0]?.device) {
+            editedDevice.deviceId = deviceInfo.value[0].device.SigfoxId;
+            editedDevice.friendlyName = deviceInfo.value[0].device.friendlyName || '';
+            editedDevice.aliasDeviceType = deviceInfo.value[0].device.aliasDeviceType || '';
+            editedDevice.SigfoxId = deviceInfo.value[0].device.SigfoxId;
+        }
+    };
+
+    // Escuchar cuando se abre el modal para cargar los datos
+    watch(() => deviceModal.value?.isOpen, (isOpen) => {
+        if (isOpen) {
+            prepareEditDevice();
+        }
+    });
+
+    // Función para enviar los cambios al servidor
+    const updateDevice = async () => {
+        try {
+            // Actualizar los datos localmente primero
+            if (deviceInfo.value && deviceInfo.value[0]?.device) {
+                deviceInfo.value[0].device.friendlyName = editedDevice.friendlyName;
+                deviceInfo.value[0].device.aliasDeviceType = editedDevice.aliasDeviceType;
+            }
+            
+            // Enviar los cambios al servidor
+            const response = await axios.put(`${apiBase}/devices/${editedDevice.deviceId}`, {
+                friendlyName: editedDevice.friendlyName,
+                aliasDeviceType: editedDevice.aliasDeviceType
+            });
+            
+            if (response.status === 200 || response.status === 204) {
+                // Éxito - cerrar el modal
+                deviceModal.value?.closeModal();
+                // Opcional: mostrar un mensaje de éxito
+                console.log('Dispositivo actualizado correctamente');
+            } else {
+                console.error('Error al actualizar dispositivo:', response);
+            }
+        } catch (error) {
+            console.error('Error en la petición:', error);
+            // Opcional: mostrar un mensaje de error al usuario
+        }
+    };
 
     // Compute location history from the new API response format
     const locationHistory = computed(() => {
