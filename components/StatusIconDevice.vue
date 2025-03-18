@@ -10,19 +10,19 @@
 </template>
 
 <script setup lang="ts">
-import { PropType, watch } from 'vue';
+  import { PropType, watch } from 'vue';
 
-const props = defineProps({
-  status: {
+  const props = defineProps({
+    status: {
       type: String as PropType<'Connected' | 'Disconnected'>,
       required: true,
       validator: (value: string): boolean => 
-          ['Connected', 'Disconnected'].includes(value)
-  }
-})
+        ['Connected', 'Disconnected'].includes(value)
+    }
+  })
 
-// Add this to debug the status values
-watch(() => props.status, (newStatus) => {
-  console.log('Status changed:', newStatus)
-})
+  // Add this to debug the status values
+  watch(() => props.status, (newStatus) => {
+    console.log('Status changed:', newStatus)
+  })
 </script>

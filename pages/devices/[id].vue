@@ -79,8 +79,8 @@
         </div>
           
         <!-- search block (commented out) -->
-        <!-- <div class=" col-span-12">
-            <div class=" w-full flex justify-end mb-4">
+        <div class=" col-span-12">
+            <div class=" w-full flex justify-end mb-4 gap-x-3">
                 <div id="date-range-picker" date-rangepicker class="flex items-center">
                     <div class="relative">
                         <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -100,18 +100,28 @@
                         <input id="datepicker-range-end" name="end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date end">
                     </div>
                 </div>
+                <button 
+                    class="px-4 py-2.5 border border-blue-600 text-blue-600 hover:bg-blue-50 
+                        rounded-lg focus:ring-4 focus:ring-blue-200 focus:outline-none 
+                        transition-colors duration-200 font-medium text-sm"
+                >
+                Search
+                </button>
             </div>
-        </div> -->
+            <div>
+                
+            </div>
+        </div>
 
         <!-- Map and Timeline Container -->
         <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4 mb-10">
             <!-- Timeline -->
             <div class="col-span-3 bg-white rounded-lg shadow-sm p-5 flex flex-col h-full">
-                <h4 class="font-semibold text-gray-700 mb-3">Location History</h4>
+                <h4 class="font-semibold text-gray-700 mb-3">last 10 device positions</h4>
                 <div class="h-80 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                     <ol class="relative border-s border-gray-300 ">                  
                         <li 
-                            v-for="(location, index) in locationHistory" 
+                            v-for="(location, index) in locationHistory"
                             :key="index" 
                             class=" m-6 ms-6 cursor-pointer" 
                             @click="setActiveLocation(index)"
@@ -163,7 +173,7 @@
             </div>
         </div>
 
-        <!-- Ubications Table -->
+        <!-- Ubications Table
         <div class="col-span-12 lg:col-span-6 bg-gray-100 rounded-lg shadow-lg text-gray-700">
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Ubications</h2>
             <div class="overflow-hidden max-h-96">
@@ -191,7 +201,7 @@
                     Loading device data...
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 </template>
 

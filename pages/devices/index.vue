@@ -1,98 +1,3 @@
-<script setup lang="ts">
-  import { ref, onMounted } from 'vue';
-  import axios from 'axios';
-  import { useRuntimeConfig } from '#app';
-  import { useRouter } from 'vue-router';
-  import type { Header } from "vue3-easy-data-table";
-  import Navbar from '~/components/Navbar.vue';
-  import type { SigfoxDevice } from '~/components/types/index'
-
-  const config = useRuntimeConfig()
-  const apiBase = config.public.apiBase
-  const router = useRouter()
-
-  const searchValue = ref('')
-  const itemsPerPage = ref(10)
-  const serverItemsLength = ref(0)
-
-  const devices = ref<SigfoxDevice[]>([])
-  const dataTable = ref()
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-
-  const headers: Header[] = [
-      { text: "Name", value: "friendlyName" },
-      { text: "Sigfox ID", value: "SigfoxId" },
-      { text: "Device Type", value: "deviceType" },
-      { text: "Last Latitude", value: "lastLatitude" },
-      { text: "Last Longitude", value: "lastLongitude" },
-      { 
-        text: "Last Update", 
-        value: "lastLocationUpdate",
-        sortable: true // Habilita el ordenamiento para esta columna
-    },
-  ];
-
-  const fetchDevices = async () => {
-      isLoading.value = true
-      error.value = null
-      try {
-          const response = await axios.get<SigfoxDevice[]>(`${apiBase}/devices/`)
-          devices.value = response.data;
-          formatMessagesHistory();
-      } catch (e) {
-          error.value = 'Error al cargar los dispositivos'
-          console.error('Error fetching devices:', e)
-      } finally {
-          isLoading.value = false
-      }
-  }
-
-    const handleRowClick = (item: SigfoxDevice) => {
-        router.push({
-            path: `/devices/${item.deviceId}`,
-        });
-    }
-
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'No disponible';
-    return new Date(dateString).toLocaleString('es-ES', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  }
-
-  const formatMessagesHistory = () => {
-    if (!devices.value) return;
-    
-    // Función auxiliar para convertir fecha a timestamp
-    const getTimestamp = (dateString: string) => new Date(dateString).getTime();
-    
-    dataTable.value = devices.value
-        // Ordenamos los dispositivos por lastLocationUpdate
-        .sort((a: SigfoxDevice, b: SigfoxDevice) => {
-            // Convertimos las fechas a timestamps para una comparación correcta
-            const dateA = getTimestamp(a.lastLocationUpdate);
-            const dateB = getTimestamp(b.lastLocationUpdate);
-            return dateB - dateA; // Ordenamiento descendente
-        })
-        // Luego formateamos las fechas
-        .map((device: SigfoxDevice) => ({
-            ...device,
-            // Formateamos lastLocationUpdate para la visualización
-            lastLocationUpdate: formatDate(device.lastLocationUpdate)
-        }));
-  }
-
-  onMounted(() => {
-      fetchDevices()
-  })
-</script>
-
 <template>
     <div>
         <Navbar/>
@@ -126,12 +31,18 @@
                             alternating
                             buttons-pagination
                             show-index
-                        />
+                        >
+                            <!-- Use the item slot syntax for the status column -->
+                            <template #item-status="{ status }">
+                                <StatusIconDevice :status="status" style="margin-left: 8px;" />
+                            </template>
+                        </EasyDataTable>
+
                     </div>
                     
                 </div>
             </div>
-
+            <!-- loading view -->
             <div v-else class="p-5 text-center text-gray-500">
                 <div class="text-center flex gap-x-3 items-center justify-center">
                     <div role="status">
@@ -149,8 +60,157 @@
 
         </div>
     </div>
-    
 </template>
+
+<script setup lang="ts">
+    import { ref, onMounted } from 'vue';
+    import axios from 'axios';
+    import { useRuntimeConfig } from '#app';
+    import { useRouter } from 'vue-router';
+    import type { Header } from "vue3-easy-data-table";
+    import Navbar from '~/components/Navbar.vue';
+    import type { SigfoxDevice } from '~/components/types/index';
+    import StatusIconDevice from '~/components/StatusIconDevice.vue';
+
+    interface LocationHistoryInterfaz {
+        id: null,
+        latitude: null,
+        longitude: null,
+        locationName: string,
+        timestamp: null
+    }
+
+    const config = useRuntimeConfig()
+    const apiBase = config.public.apiBase
+    const router = useRouter()
+
+    const searchValue = ref('')
+    const itemsPerPage = ref(10)
+    const serverItemsLength = ref(0)
+
+    const devices = ref<SigfoxDevice[]>([])
+    const dataTable = ref()
+    const isLoading = ref(false)
+    const error = ref<string | null>(null)
+
+    const headers: Header[] = [
+    { text: 'Status', value: 'status' },
+    { text: "Sigfox ID", value: "SigfoxId" },
+        { text: "Type", value: "aliasDeviceType" },
+        { text: "Name", value: "friendlyName" },
+        { text: "Last Location", value: "lastLocation.locationName" },
+        { 
+            text: "Last Seen",
+            value: "formattedTimestamp",
+            sortable: true
+        },
+    ];
+
+    const fetchDevices = async () => {
+
+        isLoading.value = true
+        error.value = null
+        try {
+            const response = await axios.get<SigfoxDevice[]>(`${apiBase}/devices`)
+            devices.value = response.data;
+            console.log('devicesss', devices.value);
+
+            const processedDevices = devices.value.map((device: any) => {
+                const defaultLocation: LocationHistoryInterfaz = {
+                    id: device.SigfoxId,
+                    latitude: null,
+                    longitude: null,
+                    locationName: 'not Available',
+                    timestamp: null
+                };
+                return {
+                    ...device,
+                    lastLocation: device.locationHistory.length > 0 ? device.locationHistory[0] || defaultLocation : defaultLocation
+                };
+            });
+    
+            console.log('Devices with details:99999999', processedDevices);
+            
+            dataTable.value = processedDevices;
+            formatDevicesData();
+        } catch (e) {
+            error.value = 'Error al cargar los dispositivos'
+            console.error('Error fetching devices:', e)
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    const handleRowClick = (item: SigfoxDevice) => {
+        router.push({
+            path: `/devices/${item.deviceId}`,
+        });
+    }
+
+    const formatDate = (dateString: string | null): string => {
+        if (!dateString) return 'No disponible';
+        return new Date(dateString).toLocaleString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    };
+
+    const formatDevicesData = () => {
+        if (!dataTable.value) return;
+        
+        // Helper function to get timestamp safely
+        const getTimestamp = (dateString: string | null): number => {
+            if (!dateString) return 0;
+            return new Date(dateString).getTime();
+        };
+        
+        // Sort by lastLocationUpdate (most recent first)
+        dataTable.value = dataTable.value
+            .sort((a: any, b: any) => {
+                const timestampA = getTimestamp(a.lastLocationUpdate);
+                const timestampB = getTimestamp(b.lastLocationUpdate);
+                return timestampB - timestampA; 
+            })
+            
+            // Format dates and add any additional display properties
+            .map((device: any) => {
+                // Create a status property based on how recent the update is
+                let status = "offline"; // Default status
+                let statusColor = "#FF0000"; // Red for offline
+                
+                if (device.lastLocationUpdate) {
+                    const lastSeen = getTimestamp(device.lastLocationUpdate);
+                    const now = Date.now();
+                    const hoursDifference = (now - lastSeen) / (1000 * 60 * 60);
+                    
+                    if (hoursDifference <= 48) {
+                        status = "Connected";
+                        statusColor = "#008000"; // Green for online
+                    } else {
+                        status = "Disconnected";
+                        statusColor = "#FF0000"; // Red for offline
+                    }
+                }
+                
+                // Return enhanced device object
+                return {
+                    ...device,
+                    status,
+                    statusColor,
+                    formattedTimestamp: formatDate(device.lastLocationUpdate)
+                };
+            });
+        console.log('Devices with details:', dataTable.value);
+    };
+
+    onMounted(() => {
+        fetchDevices()
+    })
+</script>
 
 <style scoped>
 :deep(.vue3-easy-data-table__tbody tr) {
