@@ -1,7 +1,7 @@
 <template >
     <Navbar/>
     <div class="grid grid-cols-3 px-40 gap-x-10 pb-10 font-sans">
-        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3 mb-10">Ubication</h1>
+        <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl self-center col-span-3 mb-10">Location</h1>
         <div name="userInformationCard" class="bg-gray-100 rounded-lg shadow-lg [&>strong]:font-bold text-gray-700 text-left row-start-2 row-span-4 overflow-hidden h-min">
             <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Information</h2>
             <div class="py-8 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg relative group">

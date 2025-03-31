@@ -6,6 +6,16 @@
       :zoom="initialZoom"
       style="width: 100%; height: 100%;"
       @load="onLoad"
+      :options="{
+        zoomControl: true,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+        mapTypeId: 'roadmap',
+        zoomControlOptions: {
+          position: 7
+        }
+      }"
     >
       <!-- Renderizamos los marcadores y círculos de las ubicaciones -->
       <template v-for="location in locations" :key="location.id">
@@ -56,7 +66,16 @@ const apiKey = config.public.apiGoogleMaps
 
 // Calculamos el centro del mapa basado en todos los puntos disponibles
 const mapCenter = computed(() => {
-  // Primero intentamos con las ubicaciones
+  // Primero intentamos encontrar Manitou Italia
+  const manitouLocation = props.locations.find(loc => loc.name === 'Manitou Italia, S.r.l.');
+  if (manitouLocation) {
+    return {
+      lat: Number(manitouLocation.latitude),
+      lng: Number(manitouLocation.longitude)
+    }
+  }
+  
+  // Si no encontramos Manitou Italia, usamos la primera ubicación
   if (props.locations && props.locations.length > 0) {
     return {
       lat: Number(props.locations[0].latitude),
@@ -73,7 +92,7 @@ const mapCenter = computed(() => {
   return { lat: 0, lng: 0 } // Valor por defecto si no hay puntos
 })
 
-const initialZoom = ref(10)
+const initialZoom = ref(15) // Aumentamos el zoom inicial para una mejor visualización
 const map = ref(null)
 
 // Función para los marcadores de ubicaciones
