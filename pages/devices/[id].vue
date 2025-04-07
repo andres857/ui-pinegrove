@@ -153,11 +153,10 @@
             </div>
 
             <!-- Map -->
-            <!-- <div class="col-span-9 w-full">
+            <div class="col-span-9 w-full">
                 <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-full">
-                    <Map 
-                        v-if="messagesHistory.length > 0"
-                        :locations="messagesHistory"
+                    <Map v-if="messagesHistory.length > 0"
+                        :locations="locationHistory"
                         :active-index="activeLocationIndex"
                         :show-radius-circles="false"
                         @marker-click="setActiveLocation"
@@ -166,38 +165,8 @@
                         No location information available
                     </div>
                 </div>
-            </div> -->
-        </div>
-
-        <!-- Ubications Table
-        <div class="col-span-12 lg:col-span-6 bg-gray-100 rounded-lg shadow-lg text-gray-700">
-            <h2 class="tracking-wider leading-tight font-semibold text-gray-100 bg-gray-700 py-5 text-center text-2xl">Ubications</h2>
-            <div class="overflow-hidden max-h-96">
-                <EasyDataTable
-                    v-if="deviceInfo"
-                    :headers="messageHeaders"
-                    :items="messagesHistory"
-                    :search-value="searchValue"
-                    :loading="isLoading"
-                    :items-per-page="itemsPerPage"
-                    :rows-items="[5,10,15,20]"
-                    :rows-per-page="10"
-                    alternating
-                    buttons-pagination
-                    show-index
-                    @click:row="handleRowClick"
-                >
-                    <template #header="header">
-                        <p class="text-gray-700 text-base">
-                            {{ header.text }}
-                        </p>
-                    </template>
-                </EasyDataTable>
-                <div v-else class="p-5 text-center text-gray-500">
-                    Loading device data...
-                </div>
             </div>
-        </div> -->
+        </div>
     </div>
 </template>
 
@@ -310,11 +279,13 @@
             return [];
         }
         // Use the new data structure to create location history
-        return messagesHistory.value.map((loc: any, index: number) => {            
+        return messagesHistory.value.map((loc: any, index: number) => {
+            console.log('Location:', loc);
+            
             return {
-                lat: loc.locationName,
-                lng: loc.locationName,
-                radius: loc.location?.radiusMeters || 1000,
+                lat: Number(loc.latitude),
+                lng: Number(loc.longitude),
+                radius: loc.location?.radiusMeters || 5000,
                 time: loc.timestamp,
                 label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
                 messageId: loc.id 
@@ -351,17 +322,12 @@
     const formatMessagesHistory = () => {
         messagesHistory.value = deviceInfo.value.locationHistory
         .map((loc: any) => {
-            // Log each item during mapping
-            console.log('Location item:', loc);
-            
-            // Return the transformed object
             return {
                 ...loc,
                 timestamp: formatDate(loc.timestamp),
             };
         })
         .reverse();
-    
         console.log('Formatted messages history:', messagesHistory.value);
     }
 
