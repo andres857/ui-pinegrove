@@ -100,7 +100,9 @@
                         <input id="datepicker-range-end" name="end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date end">
                     </div>
                 </div>
-                <button 
+                <button
+                    @click="handleDateSearch"
+                    type="button"
                     class="px-4 py-2.5 border border-blue-600 text-blue-600 hover:bg-blue-50 
                         rounded-lg focus:ring-4 focus:ring-blue-200 focus:outline-none 
                         transition-colors duration-200 font-medium text-sm"
@@ -218,6 +220,9 @@
     const messagesHistory = ref([])
     const activeLocationIndex = ref(0)
 
+    const startDate = ref(null);
+    const endDate = ref(null);
+
     // Para manejar la edición del dispositivo
     const deviceModal = ref(null);
     const editedDevice = reactive({
@@ -280,7 +285,7 @@
         }
         // Use the new data structure to create location history
         return messagesHistory.value.map((loc: any, index: number) => {
-            console.log('Location:', loc);
+            // console.log('Location:', loc);
             
             return {
                 lat: Number(loc.latitude),
@@ -309,7 +314,7 @@
         isLoading.value = true;
         try {
             const response = await axios.get(`${apiBase}/devices/${deviceId}`);
-            console.log('Device details:', response.data);
+            // console.log('Device details:', response.data);
             deviceInfo.value = response.data;
             formatMessagesHistory();
         } catch (error) {
@@ -328,7 +333,7 @@
             };
         })
         .reverse();
-        console.log('Formatted messages history:', messagesHistory.value);
+        // console.log('Formatted messages history:', messagesHistory.value);
     }
 
     // Set active location
@@ -343,6 +348,24 @@
         if (index !== -1) {
             setActiveLocation(index);
         }
+    };
+
+    const handleDateSearch = () => {
+        // Obtener los valores de los inputs del date picker
+        const startInput = document.getElementById('datepicker-range-start');
+        const endInput = document.getElementById('datepicker-range-end');
+        
+        // Guardar los valores en las variables reactivas
+        startDate.value = startInput.value;
+        endDate.value = endInput.value;
+        
+        console.log('Date range selected:', {
+            start: startDate.value,
+            end: endDate.value
+        });
+        
+        // Aquí puedes implementar la lógica para filtrar datos basados en el rango de fechas
+        // Por ejemplo: filterDataByDateRange(startDate.value, endDate.value);
     };
 
     onMounted(() => {
