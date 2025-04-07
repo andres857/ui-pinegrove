@@ -86,7 +86,6 @@
 
     const searchValue = ref('')
     const itemsPerPage = ref(10)
-    const serverItemsLength = ref(0)
 
     const devices = ref<SigfoxDevice[]>([])
     const dataTable = ref()
@@ -94,8 +93,8 @@
     const error = ref<string | null>(null)
 
     const headers: Header[] = [
-    { text: 'Status', value: 'status' },
-    { text: "Sigfox ID", value: "SigfoxId" },
+        { text: 'Status', value: 'status' },
+        { text: "Sigfox ID", value: "SigfoxId" },
         { text: "Type", value: "aliasDeviceType" },
         { text: "Name", value: "friendlyName" },
         { text: "Last Location", value: "lastLocation.locationName" },
@@ -107,7 +106,6 @@
     ];
 
     const fetchDevices = async () => {
-
         isLoading.value = true
         error.value = null
         try {
@@ -115,20 +113,24 @@
             devices.value = response.data;
             console.log('devicesss', devices.value);
 
-            const processedDevices = devices.value.map((device: any) => {
-                const defaultLocation: LocationHistoryInterfaz = {
-                    id: device.SigfoxId,
-                    latitude: null,
-                    longitude: null,
-                    locationName: 'not Available',
-                    timestamp: null
-                };
-                return {
-                    ...device,
-                    lastLocation: device.locationHistory.length > 0 ? device.locationHistory[0] || defaultLocation : defaultLocation
-                };
-            });
-    
+            const processedDevices = devices.value
+                .map((device: any) => {
+                    const defaultLocation: LocationHistoryInterfaz = {
+                        id: device.SigfoxId,
+                        latitude: null,
+                        longitude: null,
+                        locationName: 'not Available',
+                        timestamp: null
+                    };
+                    device.locationHistory = device.locationHistory.sort((a, b) => {
+                        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+                    });
+                    
+                    return {
+                        ...device,
+                        lastLocation: device.locationHistory.length > 0 ? device.locationHistory[0] || defaultLocation : defaultLocation
+                    };
+                })    
             console.log('Devices with details:99999999', processedDevices);
             
             dataTable.value = processedDevices;

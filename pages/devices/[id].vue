@@ -11,10 +11,10 @@
                     <svg width="20px" height="20px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="8" cy="8" r="8" fill="#008000"/>
                     </svg>
-                    <p><strong>Device ID: </strong>{{ deviceInfo[0]?.device?.SigfoxId || 'N/A' }}</p>
-                    <p><strong>Type: </strong> {{ deviceInfo[0]?.device?.aliasDeviceType || 'N/A' }} </p>
-                    <p><strong>Container: </strong> {{ deviceInfo[0]?.device?.friendlyName || 'N/A' }} </p>
-                    <p><strong>Last Update: </strong>{{ formatDate(deviceInfo[0]?.timestamp) }}</p>
+                    <p><strong>Device ID: </strong>{{ deviceInfo?.SigfoxId || 'N/A' }}</p>
+                    <p><strong>Type: </strong> {{ deviceInfo.aliasDeviceType || 'N/A' }} </p>
+                    <p><strong>Container: </strong> {{ deviceInfo.friendlyName || 'N/A' }} </p>
+                    <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.lastLocationUpdate) }}</p>
                     
                     <!-- Usar el modal con el icono como trigger -->
                     <div>
@@ -108,9 +108,6 @@
                 Search
                 </button>
             </div>
-            <div>
-                
-            </div>
         </div>
 
         <!-- Map and Timeline Container -->
@@ -128,9 +125,8 @@
                         >
                             <span 
                             class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
-                            :class="getStatusClass(location.status)"
                             >
-                                <svg :fill="getStatusColor(location.status)" height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
+                                <svg height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
                                     viewBox="0 0 434.174 434.174" xml:space="preserve">
                                     <g>
                                         <path d="M217.087,119.397c-24.813,0-45,20.187-45,45s20.187,45,45,45s45-20.187,45-45S241.901,119.397,217.087,119.397z"/>
@@ -151,17 +147,17 @@
                     </ol>
                 </div>
                 <!-- Indicador de scroll opcional -->
-                <div v-if="locationHistory.length > 10" class="text-center text-xs text-gray-500 mt-2">
+                <!-- <div v-if="locationHistory.length > 10" class="text-center text-xs text-gray-500 mt-2">
                     <p>Scroll to see more locations</p>
-                </div>
+                </div> -->
             </div>
 
             <!-- Map -->
-            <div class="col-span-9 w-full">
+            <!-- <div class="col-span-9 w-full">
                 <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-full">
                     <Map 
-                        v-if="locationHistory.length > 0"
-                        :locations="locationHistory"
+                        v-if="messagesHistory.length > 0"
+                        :locations="messagesHistory"
                         :active-index="activeLocationIndex"
                         :show-radius-circles="false"
                         @marker-click="setActiveLocation"
@@ -170,7 +166,7 @@
                         No location information available
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
 
         <!-- Ubications Table
@@ -251,25 +247,7 @@
     const deviceInfo = ref<DeviceLocation[] | null>(null)
     const isLoading = ref(false)
     const messagesHistory = ref([])
-    const searchValue = ref('')
-    const itemsPerPage = ref(10)
     const activeLocationIndex = ref(0)
-
-    // Status definitions for timeline and markers
-    const locationStatuses = [
-        { value: 'origin', label: 'Origin', color: '#00AA55', bgClass: 'bg-green-100' },
-        { value: 'intransit', label: 'In transit', color: '#88C700', bgClass: 'bg-green-100' },
-        { value: 'warning', label: 'Warning', color: '#FFAA00', bgClass: 'bg-yellow-100' },
-        { value: 'alert', label: 'Alert', color: '#FF5555', bgClass: 'bg-red-100' }
-    ]
-
-    // Updated headers to show location name instead of coordinates
-    const messageHeaders: Header[] = [
-        { text: "Date", value: "timestamp", sortable: true },
-        { text: "Location", value: "locationName" },
-        // { text: "Lat", value: "latitude" },
-        // { text: "Long", value: "longitude" }
-    ]
 
     // Para manejar la edición del dispositivo
     const deviceModal = ref(null);
@@ -331,34 +309,17 @@
         if (!deviceInfo.value || deviceInfo.value.length === 0) {
             return [];
         }
-
         // Use the new data structure to create location history
-        return deviceInfo.value
-            .filter(loc => loc.latitude && loc.longitude)
-            .slice(0, 10)
-            .map((loc, index) => {
-                // Determine status based on locationName or index
-                let statusValue = 'origin';
-                if (loc.locationName.toLowerCase().includes('transit')) {
-                    statusValue = 'intransit';
-                } else if (index > 5) {
-                    statusValue = 'alert';
-                } else if (index > 2) {
-                    statusValue = 'warning';
-                }
-                
-                const status = locationStatuses.find(s => s.value === statusValue) || locationStatuses[0];
-                
-                return {
-                    lat: loc.locationName == 'In transit' ? Number(loc.latitude) : Number(loc.location.latitude),
-                    lng: loc.locationName == 'In transit' ? Number(loc.longitude) : Number(loc.location.longitude),
-                    radius: loc.location?.radiusMeters || 1000,
-                    time: formatDate(loc.timestamp),
-                    status: statusValue,
-                    label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
-                    messageId: loc.id 
-                };
-            });
+        return messagesHistory.value.map((loc: any, index: number) => {            
+            return {
+                lat: loc.locationName,
+                lng: loc.locationName,
+                radius: loc.location?.radiusMeters || 1000,
+                time: loc.timestamp,
+                label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
+                messageId: loc.id 
+            };
+        });
     });
 
     const formatDate = (dateString: string | null): string => {
@@ -376,8 +337,7 @@
     const loadDeviceDetails = async () => {
         isLoading.value = true;
         try {
-            // Updated API endpoint
-            const response = await axios.get(`${apiBase}/locations/history/device/${deviceId}`);
+            const response = await axios.get(`${apiBase}/devices/${deviceId}`);
             console.log('Device details:', response.data);
             deviceInfo.value = response.data;
             formatMessagesHistory();
@@ -389,38 +349,21 @@
     };
 
     const formatMessagesHistory = () => {
-        if (!deviceInfo.value || deviceInfo.value.length === 0) {
-            messagesHistory.value = [];
-            return;
-        }
-
-        // Format the device locations for the data table
-        messagesHistory.value = deviceInfo.value
-            .sort((a, b) => {
-                const dateA = new Date(a.timestamp).getTime();
-                const dateB = new Date(b.timestamp).getTime();
-                return dateB - dateA; // Descending order (newest first)
-            })
-            .map((loc:any) => ({
-                id: loc.id,
+        messagesHistory.value = deviceInfo.value.locationHistory
+        .map((loc: any) => {
+            // Log each item during mapping
+            console.log('Location item:', loc);
+            
+            // Return the transformed object
+            return {
+                ...loc,
                 timestamp: formatDate(loc.timestamp),
-                locationName: loc.locationName,
-                latitude: loc.locationName == 'In transit' ? loc.latitude : loc.location.latitude,
-                longitude: loc.locationName == 'In transit' ? loc.longitude : loc.location.longitude,
-            }));
+            };
+        })
+        .reverse();
+    
+        console.log('Formatted messages history:', messagesHistory.value);
     }
-
-    // Get status color for timeline icons
-    const getStatusColor = (status) => {
-        const found = locationStatuses.find(s => s.value === status);
-        return found ? found.color : '#888888';
-    };
-
-    // Get status class for timeline icons
-    const getStatusClass = (status) => {
-        const found = locationStatuses.find(s => s.value === status);
-        return found ? found.bgClass : 'bg-gray-100';
-    };
 
     // Set active location
     const setActiveLocation = (index) => {
