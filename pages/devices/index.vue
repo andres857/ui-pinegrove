@@ -144,8 +144,11 @@
     }
 
     const handleRowClick = (item: SigfoxDevice) => {
+        console.log('Row clicked:', item.status);
+        
         router.push({
             path: `/devices/${item.deviceId}`,
+            query: { deviceStatus: item.status }
         });
     }
 
@@ -208,6 +211,7 @@
             });
         console.log('Devices with details:', dataTable.value);
     };
+    
 
     onMounted(() => {
         fetchDevices()
@@ -215,11 +219,11 @@
 </script>
 
 <style scoped>
-:deep(.vue3-easy-data-table__tbody tr) {
-    cursor: pointer;
-}
+    :deep(.vue3-easy-data-table__tbody tr) {
+        cursor: pointer;
+    }
 
-:deep(.vue3-easy-data-table__tbody tr:hover) {
-    background-color: rgba(0, 0, 0, 0.05);
-}
+    :deep(.vue3-easy-data-table__tbody tr:hover) {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
 </style>

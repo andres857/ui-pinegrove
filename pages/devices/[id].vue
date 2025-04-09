@@ -9,7 +9,7 @@
             <div class="py-2 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg">
                 <div v-if="deviceInfo" class="flex items-center gap-4">
                     <svg width="20px" height="20px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="8" cy="8" r="8" fill="#008000"/>
+                        <circle cx="8" cy="8" r="8" :fill="deviceStatusColor" />
                     </svg>
                     <p><strong>Device ID: </strong>{{ deviceInfo?.SigfoxId || 'N/A' }}</p>
                     <p><strong>Type: </strong> {{ deviceInfo.aliasDeviceType || 'N/A' }} </p>
@@ -178,7 +178,6 @@
     import { ref, onMounted, computed, reactive, watch } from 'vue'
     import { useRoute } from 'vue-router'
     import Map from '~/components/MapMultipleLocations.vue'
-    import type { Header } from "vue3-easy-data-table"
     import Navbar from '~/components/Navbar.vue'
     import ModalToggle from '~/components/ModalToggle.vue'
     
@@ -213,6 +212,13 @@
     const apiBase = config.public.apiBase
     const route = useRoute()
     const deviceId = route.params.id as string
+    const deviceStatus = route.query.deviceStatus as string; // Accede al estado del dispositivo
+
+    // Add computed property for device status color
+    const deviceStatusColor = computed(() => {
+        // If the deviceStatus is 'connected', show green, otherwise show red
+        return deviceStatus === 'Connected' ? '#008000' : '#FF0000';
+    });
 
     // Updated ref type for the new API response format
     const deviceInfo = ref<DeviceLocation[] | null>(null)
@@ -363,15 +369,6 @@
         activeLocationIndex.value = index;
     };
 
-    // Handle table row click to highlight corresponding location
-    const handleRowClick = (item) => {
-        // Find the index in locationHistory that corresponds to this message
-        const index = locationHistory.value.findIndex(loc => loc.messageId === item.id);
-        if (index !== -1) {
-            setActiveLocation(index);
-        }
-    };
-
     const handleDateSearch = () => {
         // Obtener los valores de los inputs del date picker
         const startInput = document.getElementById('datepicker-range-start') as HTMLInputElement;
@@ -435,6 +432,7 @@
     };
 
     onMounted(() => {
+        console.log("Estado del dispositivo:", deviceStatus);
         loadDeviceDetails();
     });
 </script>
