@@ -129,7 +129,7 @@
                             class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
                             >
                                 <svg height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
-                                    viewBox="0 0 434.174 434.174" xml:space="preserve">
+                                    viewBox="0 0 434.174 434.174" xml:space="preserve" fill="#008000">
                                     <g>
                                         <path d="M217.087,119.397c-24.813,0-45,20.187-45,45s20.187,45,45,45s45-20.187,45-45S241.901,119.397,217.087,119.397z"/>
                                         <path d="M217.087,0c-91.874,0-166.62,74.745-166.62,166.619c0,38.93,13.421,74.781,35.878,103.177l130.742,164.378l130.742-164.378
@@ -222,6 +222,9 @@
 
     const startDate = ref(null);
     const endDate = ref(null);
+    const originalLocations = ref([]) // Nuevo: Guardar los datos originales
+    const isFiltered = ref(false) // Nuevo: Estado para saber si hay filtros activos
+
 
     // Para manejar la edición del dispositivo
     const deviceModal = ref(null);
@@ -336,6 +339,25 @@
         // console.log('Formatted messages history:', messagesHistory.value);
     }
 
+    // Función para restablecer los filtros
+    const resetFilters = () => {
+        // Limpiar los inputs de fecha
+        const startInput = document.getElementById('datepicker-range-start') as HTMLInputElement;
+        const endInput = document.getElementById('datepicker-range-end') as HTMLInputElement;
+        if (startInput && endInput) {
+            startInput.value = '';
+            endInput.value = '';
+        }
+        
+        // Restablecer variables reactivas
+        startDate.value = null;
+        endDate.value = null;
+        isFiltered.value = false;
+        
+        // Volver a los datos originales
+        formatMessagesHistory();
+    };
+
     // Set active location
     const setActiveLocation = (index) => {
         activeLocationIndex.value = index;
@@ -352,20 +374,64 @@
 
     const handleDateSearch = () => {
         // Obtener los valores de los inputs del date picker
-        const startInput = document.getElementById('datepicker-range-start');
-        const endInput = document.getElementById('datepicker-range-end');
+        const startInput = document.getElementById('datepicker-range-start') as HTMLInputElement;
+        const endInput = document.getElementById('datepicker-range-end') as HTMLInputElement;
+        
+        if (!startInput || !endInput) return;
         
         // Guardar los valores en las variables reactivas
         startDate.value = startInput.value;
         endDate.value = endInput.value;
         
-        console.log('Date range selected:', {
-            start: startDate.value,
-            end: endDate.value
+        // Si ambos campos están vacíos, mostrar todos los datos
+        if (!startDate.value && !endDate.value) {
+            resetFilters();
+            return;
+        }
+        
+        // Convertir fechas a objetos Date para comparación
+        // Agregar hora para hacer comparación inclusiva del día completo
+        const startDateTime = startDate.value ? new Date(`${startDate.value}T00:00:00`).getTime() : null;
+        const endDateTime = endDate.value ? new Date(`${endDate.value}T23:59:59`).getTime() : null;
+        
+        // Filtrar ubicaciones según el rango de fechas
+        const filteredLocations = originalLocations.value.filter(location => {
+            const locationDateTime = new Date(location.timestamp).getTime();
+            
+            // Si solo hay fecha de inicio
+            if (startDateTime && !endDateTime) {
+                return locationDateTime >= startDateTime;
+            }
+            
+            // Si solo hay fecha de fin
+            if (!startDateTime && endDateTime) {
+                return locationDateTime <= endDateTime;
+            }
+            
+            // Si hay ambas fechas
+            if (startDateTime && endDateTime) {
+                return locationDateTime >= startDateTime && locationDateTime <= endDateTime;
+            }
+            
+            return true; // Incluir todo si no hay filtros válidos
         });
         
-        // Aquí puedes implementar la lógica para filtrar datos basados en el rango de fechas
-        // Por ejemplo: filterDataByDateRange(startDate.value, endDate.value);
+        // Formatear las ubicaciones filtradas
+        messagesHistory.value = filteredLocations.map((loc: any) => {
+            return {
+                ...loc,
+                originalTimestamp: loc.timestamp,  // Guardar timestamp original
+                timestamp: formatDate(loc.timestamp), // Formatear para mostrar
+            };
+        });
+        
+        // Activar el indicador de filtro
+        isFiltered.value = true;
+        
+        // Resetear el índice de ubicación activa
+        activeLocationIndex.value = 0;
+        
+        console.log(`Filtrado: ${filteredLocations.length} ubicaciones encontradas en el rango de fecha seleccionado`);
     };
 
     onMounted(() => {
