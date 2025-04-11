@@ -323,7 +323,6 @@
         isLoading.value = true;
         try {
             const response = await axios.get(`${apiBase}/devices/${deviceId}`);
-            // console.log('Device details:', response.data);
             deviceInfo.value = response.data;
             formatMessagesHistory();
         } catch (error) {
@@ -334,15 +333,18 @@
     };
 
     const formatMessagesHistory = () => {
+        if (!deviceInfo.value) return;
+        
+        // Tomar solo los últimos 10 registros
         messagesHistory.value = deviceInfo.value.locationHistory
-        .map((loc: any) => {
-            return {
-                ...loc,
-                timestamp: formatDate(loc.timestamp),
-            };
-        })
-        .reverse();
-        // console.log('Formatted messages history:', messagesHistory.value);
+            .slice(-10) // Tomar los últimos 10 registros
+            .map((loc: any) => {
+                return {
+                    ...loc,
+                    timestamp: formatDate(loc.timestamp),
+                };
+            })
+            .reverse();
     }
 
     // Función para restablecer los filtros
@@ -377,58 +379,77 @@
         if (!startInput || !endInput) return;
         
         // Guardar los valores en las variables reactivas
-        startDate.value = startInput.value;
-        endDate.value = endInput.value;
+        const startDateStr = startInput.value;
+        const endDateStr = endInput.value;
+        
+        console.log('Fechas seleccionadas:', {
+            inicio: startDateStr,
+            fin: endDateStr
+        });
         
         // Si ambos campos están vacíos, mostrar todos los datos
-        if (!startDate.value && !endDate.value) {
+        if (!startDateStr && !endDateStr) {
             resetFilters();
             return;
         }
+
+        // Si no tenemos el historial original, guardarlo
+        if (originalLocations.value.length === 0) {
+            console.log('Guardando historial original...');
+            originalLocations.value = [...deviceInfo.value.locationHistory];
+            console.log('Historial original guardado:', originalLocations.value.length, 'registros');
+        }
         
         // Convertir fechas a objetos Date para comparación
-        // Agregar hora para hacer comparación inclusiva del día completo
-        const startDateTime = startDate.value ? new Date(`${startDate.value}T00:00:00`).getTime() : null;
-        const endDateTime = endDate.value ? new Date(`${endDate.value}T23:59:59`).getTime() : null;
+        // Convertir formato MM/DD/YYYY a YYYY-MM-DD
+        const formatDateForComparison = (dateStr: string) => {
+            const [month, day, year] = dateStr.split('/');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+
+        const startDateTime = startDateStr ? new Date(`${formatDateForComparison(startDateStr)}T00:00:00`).getTime() : null;
+        const endDateTime = endDateStr ? new Date(`${formatDateForComparison(endDateStr)}T23:59:59`).getTime() : null;
+        
+        console.log('Rango de fechas para filtrado:', {
+            inicio: startDateTime ? new Date(startDateTime).toISOString() : 'No definido',
+            fin: endDateTime ? new Date(endDateTime).toISOString() : 'No definido'
+        });
         
         // Filtrar ubicaciones según el rango de fechas
         const filteredLocations = originalLocations.value.filter(location => {
             const locationDateTime = new Date(location.timestamp).getTime();
+            const locationDate = new Date(location.timestamp);
             
-            // Si solo hay fecha de inicio
-            if (startDateTime && !endDateTime) {
-                return locationDateTime >= startDateTime;
-            }
+            console.log('Comparando fecha:', {
+                ubicacion: locationDate.toISOString(),
+                timestamp: locationDateTime,
+                cumpleFiltro: (
+                    (!startDateTime || locationDateTime >= startDateTime) &&
+                    (!endDateTime || locationDateTime <= endDateTime)
+                )
+            });
             
-            // Si solo hay fecha de fin
-            if (!startDateTime && endDateTime) {
-                return locationDateTime <= endDateTime;
-            }
-            
-            // Si hay ambas fechas
-            if (startDateTime && endDateTime) {
-                return locationDateTime >= startDateTime && locationDateTime <= endDateTime;
-            }
-            
-            return true; // Incluir todo si no hay filtros válidos
+            return (
+                (!startDateTime || locationDateTime >= startDateTime) &&
+                (!endDateTime || locationDateTime <= endDateTime)
+            );
         });
         
-        // Formatear las ubicaciones filtradas
-        messagesHistory.value = filteredLocations.map((loc: any) => {
-            return {
-                ...loc,
-                originalTimestamp: loc.timestamp,  // Guardar timestamp original
-                timestamp: formatDate(loc.timestamp), // Formatear para mostrar
-            };
+        console.log('Resultados del filtrado:', {
+            totalRegistros: originalLocations.value.length,
+            registrosFiltrados: filteredLocations.length,
+            primerRegistro: filteredLocations[0]?.timestamp,
+            ultimoRegistro: filteredLocations[filteredLocations.length - 1]?.timestamp
         });
+        
+        // Actualizar el historial de mensajes con las ubicaciones filtradas
+        messagesHistory.value = filteredLocations;
         
         // Activar el indicador de filtro
         isFiltered.value = true;
         
         // Resetear el índice de ubicación activa
         activeLocationIndex.value = 0;
-        
-        console.log(`Filtrado: ${filteredLocations.length} ubicaciones encontradas en el rango de fecha seleccionado`);
     };
 
     onMounted(() => {
