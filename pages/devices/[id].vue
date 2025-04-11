@@ -109,6 +109,16 @@
                 >
                 Search
                 </button>
+                <button
+                    v-if="isFiltered"
+                    @click="resetFilters"
+                    type="button"
+                    class="px-4 py-2.5 border border-red-600 text-red-600 hover:bg-red-50 
+                        rounded-lg focus:ring-4 focus:ring-red-200 focus:outline-none 
+                        transition-colors duration-200 font-medium text-sm"
+                >
+                    Clear Filters
+                </button>
             </div>
         </div>
 
@@ -116,17 +126,22 @@
         <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4 mb-10">
             <!-- Timeline -->
             <div class="col-span-3 bg-white rounded-lg shadow-sm p-5 flex flex-col h-full">
-                <h4 class="font-semibold text-gray-700 mb-3">last 10 device positions</h4>
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-semibold text-gray-700">Device positions</h4>
+                    <span v-if="isFiltered" class="text-sm text-blue-600">
+                        ({{ messagesHistory.length }} filtered)
+                    </span>
+                </div>
                 <div class="h-80 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                    <ol class="relative border-s border-gray-300 ">                  
+                    <ol class="relative border-s border-gray-300">                  
                         <li 
-                            v-for="(location, index) in locationHistory"
+                            v-for="(location, index) in messagesHistory"
                             :key="index" 
-                            class=" m-6 ms-6 cursor-pointer" 
+                            class="m-6 ms-6 cursor-pointer" 
                             @click="setActiveLocation(index)"
                         >
                             <span 
-                            class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
+                                class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
                             >
                                 <svg height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
                                     viewBox="0 0 434.174 434.174" xml:space="preserve" fill="#008000">
@@ -144,14 +159,9 @@
                             <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
                                 {{ location.time }}
                             </time>
-
                         </li>
                     </ol>
                 </div>
-                <!-- Indicador de scroll opcional -->
-                <!-- <div v-if="locationHistory.length > 10" class="text-center text-xs text-gray-500 mt-2">
-                    <p>Scroll to see more locations</p>
-                </div> -->
             </div>
 
             <!-- Map -->
@@ -335,16 +345,19 @@
     const formatMessagesHistory = () => {
         if (!deviceInfo.value) return;
         
-        // Tomar solo los últimos 10 registros
-        messagesHistory.value = deviceInfo.value.locationHistory
-            .slice(-10) // Tomar los últimos 10 registros
-            .map((loc: any) => {
-                return {
-                    ...loc,
-                    timestamp: formatDate(loc.timestamp),
-                };
-            })
-            .reverse();
+        // Tomar los últimos 10 registros y ordenarlos de más reciente a más antiguo
+        const last10Locations = [...deviceInfo.value.locationHistory]
+            .slice(-10)
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        
+        // Formatear las ubicaciones
+        messagesHistory.value = last10Locations.map((loc: any, index: number) => {
+            return {
+                ...loc,
+                label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
+                time: formatDate(loc.timestamp),
+            };
+        });
     }
 
     // Función para restablecer los filtros
@@ -435,15 +448,17 @@
             );
         });
         
-        console.log('Resultados del filtrado:', {
-            totalRegistros: originalLocations.value.length,
-            registrosFiltrados: filteredLocations.length,
-            primerRegistro: filteredLocations[0]?.timestamp,
-            ultimoRegistro: filteredLocations[filteredLocations.length - 1]?.timestamp
+        // Ordenar las ubicaciones filtradas por fecha (más reciente primero)
+        const sortedLocations = [...filteredLocations].sort((a, b) => {
+            return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
         });
         
-        // Actualizar el historial de mensajes con las ubicaciones filtradas
-        messagesHistory.value = filteredLocations;
+        // Formatear las ubicaciones filtradas
+        messagesHistory.value = sortedLocations.map((loc: any, index: number) => ({
+            ...loc,
+            label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
+            time: formatDate(loc.timestamp),
+        }));
         
         // Activar el indicador de filtro
         isFiltered.value = true;
