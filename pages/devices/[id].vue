@@ -186,13 +186,13 @@
                     <!-- Título con ícono -->
                     <div class="flex items-center gap-3 mb-4">
                         
-                        <h2 class="text-lg font-semibold text-gray-800">Ubicación seleccionada</h2>
+                        <h2 class="text-lg font-semibold text-gray-800">Selected location</h2>
                     </div>
 
                     <!-- Datos -->
                     <div class="text-sm text-gray-700 space-y-1">
-                        <p><span class="font-medium text-gray-600">Empresa:</span> {{ selectedLocation.locationName }}</p>
-                        <p><span class="font-medium text-gray-600">Fecha:</span> {{ selectedLocation.time }}</p>
+                        <p><span class="font-medium text-gray-600">Location:</span> {{ selectedLocation.locationName }}</p>
+                        <p><span class="font-medium text-gray-600">Date:</span> {{ selectedLocation.time }}</p>
                     </div>
                 </div>
             </div>
