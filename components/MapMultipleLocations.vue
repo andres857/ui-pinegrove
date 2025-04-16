@@ -110,6 +110,8 @@
 
     // Handle marker click
     const handleMarkerClick = (index) => {
+        console.log(index);
+        
         emit('marker-click', index);
     };
 

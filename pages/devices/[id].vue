@@ -144,42 +144,56 @@
                             }"
                         >
                             <div class=" flex gap-x-1">
-                                    <div class="flex items-start pt-1 space-x-2">
-                                        <svg v-if="index === 0" class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <svg v-else class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
+                                <div class="flex items-start pt-1 space-x-2">
+                                    <svg v-if="index === 0" class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <svg v-else class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
 
-                                    <div>
-                                        <span
-                                            v-if="index === 0"
-                                            class="inline-block text-xs bg-emerald-100 text-emerald-600 px-1  rounded-full font-medium mb-1"
-                                            >
-                                            Latest Position
-                                        </span>
+                                <div>
+                                    <span
+                                        v-if="index === 0"
+                                        class="inline-block text-xs bg-emerald-100 text-emerald-600 px-1  rounded-full font-medium mb-1"
+                                        >
+                                        Latest Position
+                                    </span>
 
-                                        <!-- Título -->
-                                        <h3 
-                                            class="mb-1 text-lg font-semibold text-gray-900"
-                                            :class="{ 'font-bold text-emerald-700': activeLocationIndex === index || index === 0 }"
-                                            >
-                                            {{ location.label }}
-                                        </h3>
+                                    <!-- Título -->
+                                    <h3 
+                                        class="mb-1 text-lg font-semibold text-gray-900"
+                                        :class="{ 'font-bold text-emerald-700': activeLocationIndex === index || index === 0 }"
+                                        >
+                                        {{ location.label }}
+                                    </h3>
 
-                                        <!-- Hora -->
-                                        <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
-                                            {{ location.time }}
-                                        </time>
-                                    </div>                                
+                                    <!-- Hora -->
+                                    <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
+                                        {{ location.time }}
+                                    </time>
+                                </div>                                
                             </div>                            
                         </li>
                     </ul>
+                </div>
 
+                <!-- Card de ubicación seleccionada -->
+                <div v-if="selectedLocation" class="mt-6 bg-white border border-gray-200 rounded-2xl shadow-lg p-6 transition-all duration-300">
+                    <!-- Título con ícono -->
+                    <div class="flex items-center gap-3 mb-4">
+                        
+                        <h2 class="text-lg font-semibold text-gray-800">Ubicación seleccionada</h2>
+                    </div>
+
+                    <!-- Datos -->
+                    <div class="text-sm text-gray-700 space-y-1">
+                        <p><span class="font-medium text-gray-600">Empresa:</span> {{ selectedLocation.locationName }}</p>
+                        <p><span class="font-medium text-gray-600">Fecha:</span> {{ selectedLocation.time }}</p>
+                    </div>
                 </div>
             </div>
 
@@ -259,6 +273,8 @@
     const endDate = ref(null);
     const originalLocations = ref([]) // Nuevo: Guardar los datos originales
     const isFiltered = ref(false) // Nuevo: Estado para saber si hay filtros activos
+
+    const selectedLocation = ref(null)
 
 
     // Para manejar la edición del dispositivo
@@ -401,6 +417,10 @@
     // Set active location
     const setActiveLocation = (index) => {
         activeLocationIndex.value = index;
+        console.log('padre', index);
+        selectedLocation.value = messagesHistory.value[index]
+        console.log(selectedLocation.value)
+
     };
 
     const handleDateSearch = () => {
