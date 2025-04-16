@@ -83,35 +83,21 @@
         // Determine icon color based on status
         let iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/red-dot.png';
         
-        // Map status to Google Maps marker colors
-        if (location.status) {
-            switch(location.status.toLowerCase()) {
-                case 'origin':
-                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/green-dot.png';
-                    break;
-                case 'intransit':
-                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/green-dot.png';
-                    break;
-                case 'warning':
-                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/yellow-dot.png';
-                    break;
-                case 'alert':
-                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/red-dot.png';
-                    break;
-                default:
-                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/blue-dot.png';
-            }
-        } else if (index === 0) {
-            // Latest location gets blue marker
-            iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/blue-dot.png';
+        // if (index === 0) {
+        //     // Latest location gets green marker
+        //     iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/green-dot.png';
+        // }
+        if (index === 0 ){
+            iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/green-dot.png';
+
         }
-        
         // Use active marker for the selected location
-        if (isActive) {
+        if (isActive && index === 0) {
             // We still use blue for active markers but make them larger
-            iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/blue-dot.png';
-        }
-        
+            iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/green-dot.png';
+        } else if ( isActive && index !==0) {
+            iconUrl = 'https://maps.gstatic.com/mapfiles/ms/icons/purple-dot.png';
+        }        
         return {
             position: { lat: location.lat, lng: location.lng },
             icon: {

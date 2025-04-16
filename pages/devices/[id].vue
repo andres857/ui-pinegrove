@@ -133,34 +133,53 @@
                     </span>
                 </div>
                 <div class="h-80 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                    <ol class="relative border-s border-gray-300">                  
+                    <ul>                  
                         <li 
                             v-for="(location, index) in messagesHistory"
                             :key="index" 
-                            class="m-6 ms-6 cursor-pointer" 
+                            class="cursor-pointer transition-all duration-300 py-2"
                             @click="setActiveLocation(index)"
+                            :class="{
+                            'bg-emerald-50 border-l-4 border-emerald-500 rounded-xl shadow-sm px-2 py-1': index === 0
+                            }"
                         >
-                            <span 
-                                class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white"
-                            >
-                                <svg height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" 
-                                    viewBox="0 0 434.174 434.174" xml:space="preserve" fill="#008000">
-                                    <g>
-                                        <path d="M217.087,119.397c-24.813,0-45,20.187-45,45s20.187,45,45,45s45-20.187,45-45S241.901,119.397,217.087,119.397z"/>
-                                        <path d="M217.087,0c-91.874,0-166.62,74.745-166.62,166.619c0,38.93,13.421,74.781,35.878,103.177l130.742,164.378l130.742-164.378
-                                            c22.457-28.396,35.878-64.247,35.878-103.177C383.707,74.745,308.961,0,217.087,0z M217.087,239.397c-41.355,0-75-33.645-75-75
-                                            s33.645-75,75-75s75,33.645,75,75S258.443,239.397,217.087,239.397z"/>
-                                    </g>
-                                </svg>
-                            </span>
-                            <h3 class="mb-1 text-lg font-semibold text-gray-900" :class="{'font-bold': activeLocationIndex === index}">
-                                {{ location.label }}
-                            </h3>
-                            <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
-                                {{ location.time }}
-                            </time>
+                            <div class=" flex gap-x-1">
+                                    <div class="flex items-start pt-1 space-x-2">
+                                        <svg v-if="index === 0" class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <svg v-else class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </div>
+
+                                    <div>
+                                        <span
+                                            v-if="index === 0"
+                                            class="inline-block text-xs bg-emerald-100 text-emerald-600 px-1  rounded-full font-medium mb-1"
+                                            >
+                                            Latest Position
+                                        </span>
+
+                                        <!-- Título -->
+                                        <h3 
+                                            class="mb-1 text-lg font-semibold text-gray-900"
+                                            :class="{ 'font-bold text-emerald-700': activeLocationIndex === index || index === 0 }"
+                                            >
+                                            {{ location.label }}
+                                        </h3>
+
+                                        <!-- Hora -->
+                                        <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
+                                            {{ location.time }}
+                                        </time>
+                                    </div>                                
+                            </div>                            
                         </li>
-                    </ol>
+                    </ul>
+
                 </div>
             </div>
 
@@ -311,7 +330,7 @@
                 lng: Number(loc.longitude),
                 radius: loc.location?.radiusMeters || 5000,
                 time: loc.timestamp,
-                label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
+                label: loc.locationName,
                 messageId: loc.id 
             };
         });
@@ -354,7 +373,7 @@
         messagesHistory.value = last10Locations.map((loc: any, index: number) => {
             return {
                 ...loc,
-                label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
+                label:  loc.locationName,
                 time: formatDate(loc.timestamp),
             };
         });
@@ -456,7 +475,7 @@
         // Formatear las ubicaciones filtradas
         messagesHistory.value = sortedLocations.map((loc: any, index: number) => ({
             ...loc,
-            label: index === 0 ? 'Latest Position: ' + loc.locationName : loc.locationName,
+            label: loc.locationName,
             time: formatDate(loc.timestamp),
         }));
         
