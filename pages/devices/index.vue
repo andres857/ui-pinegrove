@@ -4,7 +4,7 @@
         <div class="grid gap-y-4 px-40">
             <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-4">Devices</h1>
 
-            <div v-if="dataTable" class="w-full">
+            <div v-if="!isLoading" class="w-full">
                 <div class="relative mb-4">
                     
                     <input
@@ -22,7 +22,7 @@
                         <EasyDataTable
                             @click-row="handleRowClick"
                             :headers="headers"
-                            :items="dataTable"
+                            :items="dataFormatted"
                             :search-value="searchValue"
                             :loading="isLoading"
                             :items-per-page="itemsPerPage"
@@ -63,34 +63,21 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, onMounted } from 'vue';
-    import axios from 'axios';
-    import { useRuntimeConfig } from '#app';
+    import { ref } from 'vue';
+    import { useDevices } from '~/composables/usedevices';
     import { useRouter } from 'vue-router';
     import type { Header } from "vue3-easy-data-table";
     import Navbar from '~/components/Navbar.vue';
-    import type { SigfoxDevice } from '~/components/types/index';
+    import type { SigfoxDevice } from '~/types/device';
     import StatusIconDevice from '~/components/StatusIconDevice.vue';
 
-    interface LocationHistoryInterfaz {
-        id: null,
-        latitude: null,
-        longitude: null,
-        locationName: string,
-        timestamp: null
-    }
-
-    const config = useRuntimeConfig()
-    const apiBase = config.public.apiBase
+    const clientId = '51742590-5703-4a34-a2ba-f8a7bc863981'
+    const { dataFormatted, isLoading, error, refresh } = useDevices(clientId)
+    console.log('isloading', isLoading);
     const router = useRouter()
 
     const searchValue = ref('')
     const itemsPerPage = ref(10)
-
-    const devices = ref<SigfoxDevice[]>([])
-    const dataTable = ref()
-    const isLoading = ref(false)
-    const error = ref<string | null>(null)
 
     const headers: Header[] = [
         { text: 'Status', value: 'status' },
@@ -105,44 +92,6 @@
         },
     ];
 
-    const fetchDevices = async () => {
-        isLoading.value = true
-        error.value = null
-        try {
-            const response = await axios.get<SigfoxDevice[]>(`${apiBase}/devices`)
-            devices.value = response.data;
-            console.log('devicesss', devices.value);
-
-            const processedDevices = devices.value
-                .map((device: any) => {
-                    const defaultLocation: LocationHistoryInterfaz = {
-                        id: device.SigfoxId,
-                        latitude: null,
-                        longitude: null,
-                        locationName: 'not Available',
-                        timestamp: null
-                    };
-                    device.locationHistory = device.locationHistory.sort((a, b) => {
-                        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-                    });
-                    
-                    return {
-                        ...device,
-                        lastLocation: device.locationHistory.length > 0 ? device.locationHistory[0] || defaultLocation : defaultLocation
-                    };
-                })    
-            console.log('Devices with details:99999999', processedDevices);
-            
-            dataTable.value = processedDevices;
-            formatDevicesData();
-        } catch (e) {
-            error.value = 'Error al cargar los dispositivos'
-            console.error('Error fetching devices:', e)
-        } finally {
-            isLoading.value = false
-        }
-    }
-
     const handleRowClick = (item: SigfoxDevice) => {
         console.log('Row clicked:', item.status);
         
@@ -152,70 +101,6 @@
         });
     }
 
-    const formatDate = (dateString: string | null): string => {
-        if (!dateString) return 'No disponible';
-        return new Date(dateString).toLocaleString('es-ES', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    };
-
-    const formatDevicesData = () => {
-        if (!dataTable.value) return;
-        
-        // Helper function to get timestamp safely
-        const getTimestamp = (dateString: string | null): number => {
-            if (!dateString) return 0;
-            return new Date(dateString).getTime();
-        };
-        
-        // Sort by lastLocationUpdate (most recent first)
-        dataTable.value = dataTable.value
-            .sort((a: any, b: any) => {
-                const timestampA = getTimestamp(a.lastLocationUpdate);
-                const timestampB = getTimestamp(b.lastLocationUpdate);
-                return timestampB - timestampA; 
-            })
-            
-            // Format dates and add any additional display properties
-            .map((device: any) => {
-                // Create a status property based on how recent the update is
-                let status = "offline"; // Default status
-                let statusColor = "#FF0000"; // Red for offline
-                
-                if (device.lastLocationUpdate) {
-                    const lastSeen = getTimestamp(device.lastLocationUpdate);
-                    const now = Date.now();
-                    const hoursDifference = (now - lastSeen) / (1000 * 60 * 60);
-                    
-                    if (hoursDifference <= 48) {
-                        status = "Connected";
-                        statusColor = "#008000"; // Green for online
-                    } else {
-                        status = "Disconnected";
-                        statusColor = "#FF0000"; // Red for offline
-                    }
-                }
-                
-                // Return enhanced device object
-                return {
-                    ...device,
-                    status,
-                    statusColor,
-                    formattedTimestamp: formatDate(device.lastLocationUpdate)
-                };
-            });
-        console.log('Devices with details:', dataTable.value);
-    };
-    
-
-    onMounted(() => {
-        fetchDevices()
-    })
 </script>
 
 <style scoped>

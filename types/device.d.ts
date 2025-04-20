@@ -38,6 +38,7 @@ export interface SigfoxMessage {
 
 export interface SigfoxDevice {
     deviceId: string;
+    status?: string;
     friendlyName: string;
     SigfoxId: string;
     deviceType: string;

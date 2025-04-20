@@ -15,10 +15,12 @@ export const useDevices = (clientId?: string) => {
     const isLoading = ref(true)
     const dataTable = ref<any[]>([])
     const error = ref<string | null>(null)
+    const dataFormatted =  ref<any[]>([])
 
     const fetchDevices = async ()=>{
         isLoading.value = true
         error.value = null
+        // await new Promise(resolve => setTimeout(resolve, 3000)) // delay de 300ms
 
         try {
             const response = await $api.get<SigfoxDevice[]>(`/devices/client/${clientId}`)
@@ -45,7 +47,9 @@ export const useDevices = (clientId?: string) => {
             console.log('Devices composable', processedDevices);
             
             dataTable.value = processedDevices;
-            formatDevicesData(dataTable.value);
+            dataFormatted.value = formatDevicesData(dataTable.value);
+            // console.log('aaaaaaaaaaaaaaa',f);
+            
         } catch (e) {
             error.value = 'Error al cargar los dispositivos'
             console.error('Error fetching devices:', e)
@@ -60,6 +64,7 @@ export const useDevices = (clientId?: string) => {
     return {
         devices,
         dataTable,
+        dataFormatted,
         isLoading,
         error,
         refresh: fetchDevices,

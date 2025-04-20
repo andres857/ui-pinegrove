@@ -3,7 +3,7 @@ import { formatDate, getTimestamp } from './date'
 export const formatDevicesData = (data: any) => {
     if (!data) return;
     // Sort by lastLocationUpdate (most recent first)
-    data.sort((a: any, b: any) => {
+    const formattedData = data.sort((a: any, b: any) => {
         const timestampA = getTimestamp(a.lastLocationUpdate);
         const timestampB = getTimestamp(b.lastLocationUpdate);
         return timestampB - timestampA; 
@@ -36,4 +36,5 @@ export const formatDevicesData = (data: any) => {
             formattedTimestamp: formatDate(device.lastLocationUpdate)
         };
     });
+    return formattedData
 };
