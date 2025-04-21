@@ -1,9 +1,8 @@
 <template>
     <div>
         <Navbar/>
-        <div class="grid gap-y-4 px-40">
-            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Locations</h1>
-
+        <div v-if="!isLoading" class="grid gap-y-4 px-40">
+            <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-10">Locations</h1>            
             <!-- Contenedor del mapa -->
             <div class="w-full h-[800px] mb-8 rounded-lg overflow-hidden shadow-lg">
                 <MultipleLocationsMap 
@@ -12,7 +11,8 @@
                     @device-click="handleDeviceClick"
                 />
             </div>
-            
+
+            <!-- table section -->
             <div class="flex flex-row justify-between">   
                 <div class="relative">
                     <input
@@ -46,6 +46,7 @@
                 />
             </div>
         </div>
+        <SpinnerLoader :isLoading="isLoading" message="Loading locations..." />
     </div>
 </template>
 
@@ -55,8 +56,10 @@
     import { useRuntimeConfig } from '#app'
     import { useRouter } from 'vue-router'
     import type { Header, Item, ClickRowArgument, SortType  } from "vue3-easy-data-table";
+    
     import Navbar from '~/components/Navbar.vue';
     import MultipleLocationsMap from '~/components/MultipleLocations.vue'
+    import SpinnerLoader from '~/components/loaders/SpinnerLoader.vue';
 
     // Definimos las interfaces para tipar nuestros datos
     interface Client {
@@ -97,7 +100,7 @@
     const locations = ref<Location[]>([])
     const devices = ref()
 
-    const isLoading = ref(false)
+    const isLoading = ref(true)
     const error = ref<string | null>(null)
 
     const sortBy = ref("index");  // Hacemos que sea reactivo
