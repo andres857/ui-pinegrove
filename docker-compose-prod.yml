@@ -7,6 +7,8 @@ services:
     environment:
       - PUBLIC_API=${PUBLIC_API}
       - API_GOOGLE_MAPS=${API_GOOGLE_MAPS}
+    networks:
+      - pinegrove-network
 
   nginx:
     image: nginx:alpine
@@ -16,12 +18,15 @@ services:
     depends_on:
       - nuxt-app
     ports:
-      - "80:80"
+      - "1903:80"
     logging:
       driver: "json-file"
       options:
         max-size: "1m"
+    networks:
+      - pinegrove-network
 
 networks:
-  follow-network:
+  pinegrove-network:
+    external: true
     driver: bridge
