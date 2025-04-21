@@ -72,7 +72,7 @@
     import StatusIconDevice from '~/components/StatusIconDevice.vue';
 
     const clientId = '51742590-5703-4a34-a2ba-f8a7bc863981'
-    const { dataFormatted, isLoading, error, refresh } = useDevices(clientId)
+    const { dataFormatted, isLoading, error } = useDevices(clientId)
     console.log('isloading', isLoading);
     const router = useRouter()
 
