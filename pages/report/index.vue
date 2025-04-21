@@ -6,50 +6,54 @@
         <h1 class="text-5xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl mb-6 ">Report</h1>
         
       </div>
-      <div class="flex justify-between items-center">
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Search Location..."
-          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <button 
-            @click="downloadExcel"
-            class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+
+      <div v-if="!isLoading">
+        <div class="flex justify-between items-center">
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Search Location..."
+            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button 
+              @click="downloadExcel"
+              class="px-4 py-2 bg-[#332d68] text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <i class="fas fa-download"></i> Download Report
+          </button>
+        </div>
+        <div class="w-full mt-3"> 
+          <EasyDataTable
+            :headers="headers"
+            :items="locations"
+            :search-value="search"
+            @expand-row="loadIntroduction"
+            table-class-name="customize-table"
+            :body-row-class-name="bodyRowClassNameFunction"
           >
-            <i class="fas fa-download"></i> Download Report
-        </button>
+            <template #expand="item">
+              <div
+                v-if="item.introduction"
+                style="padding:25px 15px"
+              >       
+                <EasyDataTable
+                  :headers="deviceHeaders"
+                  :items="deviceDetailsMap[item.id_location] || []"
+                  :loading="loadingStates[item.id_location]"
+                  :sort-by="sortBy"
+                  :sort-type="sortType"
+                  show-index
+                >
+                  <template #item-status="{ status }">
+                    <StatusIconDevice :status="status" style="margin-left: 8px;" />
+                  </template>
+                </EasyDataTable>
+              </div>
+            </template>
+          </EasyDataTable>
+        </div>
       </div>
-      <div class="w-full mt-3"> 
-        <EasyDataTable
-          :headers="headers"
-          :items="locations"
-          :search-value="search"
-          @expand-row="loadIntroduction"
-          table-class-name="customize-table"
-          :body-row-class-name="bodyRowClassNameFunction"
-        >
-          <template #expand="item">
-            <div
-              v-if="item.introduction"
-              style="padding:25px 15px"
-            >       
-              <EasyDataTable
-                :headers="deviceHeaders"
-                :items="deviceDetailsMap[item.id_location] || []"
-                :loading="loadingStates[item.id_location]"
-                :sort-by="sortBy"
-                :sort-type="sortType"
-                show-index
-              >
-                <template #item-status="{ status }">
-                  <StatusIconDevice :status="status" style="margin-left: 8px;" />
-                </template>
-              </EasyDataTable>
-            </div>
-          </template>
-        </EasyDataTable>
-      </div>
+      <SpinnerLoader :isLoading="isLoading" message="Loading report data..." />
     </div>
   </div>
 </template>
@@ -63,6 +67,7 @@
     import type { SigfoxDevice } from '~/components/types/index';
     import StatusIconDevice from '~/components/StatusIconDevice.vue';
     import {  differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays, differenceInMonths } from 'date-fns';
+    import SpinnerLoader from '~/components/loaders/SpinnerLoader.vue';
 
     interface Location {
         id: string
@@ -99,10 +104,10 @@
     ];
 
     const search = ref("");
-    const searchField = ref(["location", "city", "province", "address"]);
+    // const searchField = ref(["location", "city", "province", "address"]);
 
     const locations = ref<Location[]>([])
-    const isLoading = ref(false)
+    const isLoading = ref(true)
     const error = ref<string | null>(null)
 
     const deviceDetailsMap = ref<Record<string, any[]>>({});
@@ -177,8 +182,8 @@
           loadingStates.value[expandedItem.id_location] = true;
           
           try {
-            const devicesPromises = expandedItem.devices.map((deviceId:any) => 
-              axios.get<SigfoxDevice>(`${apiBase}/devices/${deviceId}`)
+            const devicesPromises = expandedItem.devices.map(async (deviceId:any) => 
+              await axios.get<SigfoxDevice>(`${apiBase}/devices/${deviceId}`)
             );
             
             const responses = await Promise.all(devicesPromises);
@@ -287,35 +292,34 @@
     };
 
     onMounted(() => {
-        // fetchReport()
         fetchReport() 
     })
   </script>
 
 <style>
-/* Esta clase personaliza los colores de la tabla */
-.customize-table {
-  --easy-table-border: 1px solid #ddd;
-  --easy-table-row-border: 1px solid #ddd;
-  
-  /* Color cuando se hace hover sobre una fila */
-  --easy-table-body-row-hover-background-color: #332d68;
-  --easy-table-body-row-hover-font-color: #fff;
-}
+  /* Esta clase personaliza los colores de la tabla */
+  .customize-table {
+    --easy-table-border: 1px solid #ddd;
+    --easy-table-row-border: 1px solid #ddd;
+    
+    /* Color cuando se hace hover sobre una fila */
+    --easy-table-body-row-hover-background-color: #332d68;
+    --easy-table-body-row-hover-font-color: #fff;
+  }
 
-/* Esta clase define el estilo para la primera fila */
-.first-row {
-  --easy-table-body-row-background-color: #332d68;
-  --easy-table-body-row-font-color: #fff;
-}
+  /* Esta clase define el estilo para la primera fila */
+  .first-row {
+    --easy-table-body-row-background-color: #332d68;
+    --easy-table-body-row-font-color: #fff;
+  }
 
-/* Podemos añadir más estilos personalizados para mejorar la apariencia */
-.customize-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-}
+  /* Podemos añadir más estilos personalizados para mejorar la apariencia */
+  .customize-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+  }
 
-.customize-table td {
-  padding: 12px 8px;
-}
+  .customize-table td {
+    padding: 12px 8px;
+  }
 </style>

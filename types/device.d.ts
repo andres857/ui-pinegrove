@@ -51,3 +51,25 @@ export interface SigfoxDevice {
     locationHistory: any[]; // Puedes definir una interfaz específica si tienes la estructura
     location?: string;
 }
+
+ // Updated type definition for new API response
+export interface DeviceLocation {
+    id: string;
+    latitude: string;
+    longitude: string;
+    locationName: string;
+    timestamp: string; // ISO string, puedes usar Date si haces parse
+}
+
+export interface DeviceInfo {
+    deviceId: string;
+    friendlyName: string;
+    SigfoxId: string;
+    deviceType: string;
+    deviceTypeId: string;
+    aliasDeviceType: string;
+    lastLatitude: string;
+    lastLongitude: string;
+    lastLocationUpdate: string; // ISO string
+    locationHistory: DeviceLocation[];
+}

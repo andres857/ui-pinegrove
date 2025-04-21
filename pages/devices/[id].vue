@@ -13,7 +13,7 @@
                     </svg>
                     <p><strong>Device ID: </strong>{{ deviceInfo?.SigfoxId || 'N/A' }}</p>
                     <p><strong>Type: </strong> {{ deviceInfo.aliasDeviceType || 'N/A' }} </p>
-                    <p><strong>Container: </strong> {{ deviceInfo.friendlyName || 'N/A' }} </p>
+                    <p><strong>Name: </strong> {{ deviceInfo.friendlyName || 'N/A' }} </p>
                     <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.lastLocationUpdate) }}</p>
                     
                     <!-- Usar el modal con el icono como trigger -->
@@ -140,7 +140,9 @@
                             class="cursor-pointer transition-all duration-300 py-2"
                             @click="setActiveLocation(index)"
                             :class="{
-                            'bg-emerald-50 border-l-4 border-emerald-500 rounded-xl shadow-sm px-2 py-1': index === 0
+                                'bg-violet-100 border-l-4 border-violet-500 rounded-xl shadow-md px-2 py-1':  index !== 0 && activeLocationIndex === index,
+                                'bg-emerald-50 rounded-xl': index === 0,
+                                'bg-emerald-50 border-l-4 border-emerald-500 rounded-xl shadow-md px-2 py-1': index === 0 && activeLocationIndex === index,
                             }"
                         >
                             <div class=" flex gap-x-1">
@@ -223,34 +225,8 @@
     import Map from '~/components/MapMultipleLocations.vue'
     import Navbar from '~/components/Navbar.vue'
     import ModalToggle from '~/components/ModalToggle.vue'
+    import type { DeviceInfo } from '~/types/device'
     
-    // Updated type definition for new API response
-    interface DeviceLocation {
-        id: string;
-        latitude: string;
-        longitude: string;
-        locationName: string;
-        timestamp: string;
-        device: {
-            deviceId: string;
-            SigfoxId: string;
-            deviceType: string;
-            lastLatitude: string;
-            lastLongitude: string;
-            lastLocationUpdate: string;
-            [key: string]: any;
-        };
-        location: {
-            id: string;
-            name: string;
-            address: string;
-            country: string;
-            city: string;
-            radiusMeters: number;
-            [key: string]: any;
-        };
-    }
-
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
     const route = useRoute()
@@ -264,7 +240,7 @@
     });
 
     // Updated ref type for the new API response format
-    const deviceInfo = ref<DeviceLocation[] | null>(null)
+    const deviceInfo = ref<DeviceInfo[] | null>(null)
     const isLoading = ref(false)
     const messagesHistory = ref([])
     const activeLocationIndex = ref(0)
@@ -288,11 +264,11 @@
 
     // Función para preparar la edición cuando se abra el modal
     const prepareEditDevice = () => {
-        if (deviceInfo.value && deviceInfo.value[0]?.device) {
-            editedDevice.deviceId = deviceInfo.value[0].device.SigfoxId;
-            editedDevice.friendlyName = deviceInfo.value[0].device.friendlyName || '';
-            editedDevice.aliasDeviceType = deviceInfo.value[0].device.aliasDeviceType || '';
-            editedDevice.SigfoxId = deviceInfo.value[0].device.SigfoxId;
+        if (deviceInfo.value) {
+            editedDevice.deviceId = deviceInfo.value.SigfoxId;
+            editedDevice.friendlyName = deviceInfo.value.friendlyName || '';
+            editedDevice.aliasDeviceType = deviceInfo.value.aliasDeviceType || '';
+            editedDevice.SigfoxId = deviceInfo.value.SigfoxId;
         }
     };
 
@@ -307,28 +283,26 @@
     const updateDevice = async () => {
         try {
             // Actualizar los datos localmente primero
-            if (deviceInfo.value && deviceInfo.value[0]?.device) {
-                deviceInfo.value[0].device.friendlyName = editedDevice.friendlyName;
-                deviceInfo.value[0].device.aliasDeviceType = editedDevice.aliasDeviceType;
+            if (deviceInfo.value) {
+                deviceInfo.value.friendlyName = editedDevice.friendlyName;
+                deviceInfo.value.aliasDeviceType = editedDevice.aliasDeviceType;
             }
             
             // Enviar los cambios al servidor
             const response = await axios.put(`${apiBase}/devices/${editedDevice.deviceId}`, {
+            
                 friendlyName: editedDevice.friendlyName,
                 aliasDeviceType: editedDevice.aliasDeviceType
             });
-            
+
             if (response.status === 200 || response.status === 204) {
-                // Éxito - cerrar el modal
                 deviceModal.value?.closeModal();
-                // Opcional: mostrar un mensaje de éxito
                 console.log('Dispositivo actualizado correctamente');
             } else {
                 console.error('Error al actualizar dispositivo:', response);
             }
         } catch (error) {
             console.error('Error en la petición:', error);
-            // Opcional: mostrar un mensaje de error al usuario
         }
     };
 
@@ -369,6 +343,8 @@
         try {
             const response = await axios.get(`${apiBase}/devices/${deviceId}`);
             deviceInfo.value = response.data;
+            console.log('Device Info:', deviceInfo.value);
+            
             formatMessagesHistory();
         } catch (error) {
             console.error('Error loading device details:', error);
@@ -420,7 +396,6 @@
         console.log('padre', index);
         selectedLocation.value = messagesHistory.value[index]
         console.log(selectedLocation.value)
-
     };
 
     const handleDateSearch = () => {
@@ -507,7 +482,6 @@
     };
 
     onMounted(() => {
-        console.log("Estado del dispositivo:", deviceStatus);
         loadDeviceDetails();
     });
 </script>
