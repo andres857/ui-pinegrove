@@ -67,8 +67,19 @@ export const useApi = () => {
     }
   }
 
-  const post = <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return instance!.post(url, data, config).then((response: AxiosResponse<T>) => response.data)
+  const post = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+    try{
+      const response: AxiosResponse<T> = await instance!.post(url, data, config)
+      return {
+        data: response.data,
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers
+      }
+    } catch (err: any) {
+      error.value = err
+      throw err
+    }
   }
   
   const put = <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {

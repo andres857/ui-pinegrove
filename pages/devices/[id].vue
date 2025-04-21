@@ -1,6 +1,6 @@
 <template>
     <Navbar/>
-    <div class="grid grid-cols-12 px-40 gap-y-2 pb-10 font-sans grid-flow-row">
+    <div v-if="!isLoading" class="grid grid-cols-12 px-40 gap-y-2 pb-10 font-sans grid-flow-row">
         
         <h3 class="text-2xl font-bold tracking-wider leading-tight text-gray-700 sm:text-3xl md:text-4xl lg:text-4xl self-center col-span-3 mb-7">Device</h3>
         
@@ -215,6 +215,7 @@
             </div>
         </div>
     </div>
+    <SpinnerLoader :isLoading="isLoading" message="Loading device information..." />
 </template>
 
 <script setup lang="ts">
@@ -226,6 +227,7 @@
     import Navbar from '~/components/Navbar.vue'
     import ModalToggle from '~/components/ModalToggle.vue'
     import type { DeviceInfo } from '~/types/device'
+    import SpinnerLoader from '~/components/loaders/SpinnerLoader.vue'
     
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
@@ -241,7 +243,7 @@
 
     // Updated ref type for the new API response format
     const deviceInfo = ref<DeviceInfo[] | null>(null)
-    const isLoading = ref(false)
+    const isLoading = ref(true)
     const messagesHistory = ref([])
     const activeLocationIndex = ref(0)
 

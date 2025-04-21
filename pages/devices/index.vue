@@ -42,7 +42,7 @@
                     
                 </div>
             </div>
-            <SpinnerLoader :isLoading="isLoading" message="Loading device data..." />
+            <SpinnerLoader :isLoading="isLoading" message="Loading devices..." />
         </div>
     </div>
 </template>
