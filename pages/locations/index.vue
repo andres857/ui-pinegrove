@@ -188,8 +188,6 @@
     })
 </script>
 
-
-
 <style scoped>
     :deep(.vue3-easy-data-table__tbody tr) {
     cursor: pointer;

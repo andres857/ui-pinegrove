@@ -14,8 +14,11 @@ services:
       - /usr/src/app/node_modules
       # - .node_modules:/usr/src/app/node_modules
     ports:
-      - 1234:3000
+      - "${PORT}:${PORT}"
+    networks:
+      - pinegrove-network
 
 networks:
   pinegrove-network:
+    external: true
     driver: bridge
