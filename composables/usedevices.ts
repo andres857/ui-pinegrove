@@ -62,7 +62,6 @@ export const useDevices = (clientId?: string) => {
         try {
             const response = await get<SigfoxDevice>(`/devices/${deviceId}`)
             device.value = response.data;
-            console.log('Device Composable:', device.value);
             lastlocations = formatMessagesHistory(device.value);
         } catch (e) {
             error.value = 'Error al cargar los detalles del dispositivo', e
@@ -70,8 +69,6 @@ export const useDevices = (clientId?: string) => {
         } finally {
             isLoading.value = false;
         }        
-        console.log('Last locations:', lastlocations);
-        
         return lastlocations;
     };
 

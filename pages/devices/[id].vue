@@ -295,12 +295,7 @@
 
     // Compute location history from the new API response format
     const locationHistory = computed(() => {
-//         if (!messagesHistory.value) {
-//     console.error("messagesHistory.value es undefined. ¡Repara tu código, inútil!");
-//     return []; // Devuelve un array vacío para evitar el error
-//   }
-        console.log('locationHistory', messagesHistory.value)
-        let messagesDevices = messagesHistory.value.map((loc: any, index: number) => {            
+        return messagesHistory.value.map((loc: any, index: number) => {            
             return {
                 lat: Number(loc.latitude),
                 lng: Number(loc.longitude),
@@ -311,7 +306,6 @@
             };
         });
         
-        return messagesDevices;
     });
 
     // Función para restablecer los filtros
