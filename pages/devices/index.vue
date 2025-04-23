@@ -58,7 +58,7 @@
     import type { SigfoxDevice } from '~/types/device';
 
     const clientId = '51742590-5703-4a34-a2ba-f8a7bc863981'
-    const { dataFormatted, isLoading, error } = useDevices(clientId)
+    const { fetchDevices, dataFormatted, isLoading, error } = useDevices(clientId)
     console.log('isloading', isLoading);
     const router = useRouter()
 
@@ -87,6 +87,9 @@
         });
     }
 
+    onMounted(() => {
+        fetchDevices()
+    })
 </script>
 
 <style scoped>

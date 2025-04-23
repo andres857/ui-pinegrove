@@ -2,15 +2,16 @@ import { ref } from 'vue'
 import {useApi} from '~/composables/useApi'
 import type { SigfoxDevice } from '~/types/device'
 import type { LocationHistoryInterfaz } from '~/types/location'
-import { formatDevicesData } from '~/utils/device'
+import { formatDevicesData, formatMessagesHistory } from '~/utils/device'
 
 export const useDevices = (clientId?: string) => {
-
+    
     if (!clientId) {
         throw new Error('clientId is required')
     }
-
+    
     const { get, isLoading, error } = useApi()
+    const device = ref<SigfoxDevice | null>(null)
     const devices = ref<SigfoxDevice[]>([])
     const dataTable = ref<any[]>([])
     const dataFormatted =  ref<any[]>([])
@@ -49,18 +50,38 @@ export const useDevices = (clientId?: string) => {
         } finally {
             isLoading.value = false
         }
-    } 
+    }
 
-    // Ejecuta el fetch al montar el composable
-    onMounted(fetchDevices)
+    const getDeviceById = async (deviceId: string) => {
+        let lastlocations = null
+        if (!deviceId) {
+            throw new Error('deviceId is required')
+        }
+        const { get, isLoading, error } = useApi()
+
+        try {
+            const response = await get<SigfoxDevice>(`/devices/${deviceId}`)
+            device.value = response.data;
+            console.log('Device Composable:', device.value);
+            lastlocations = formatMessagesHistory(device.value);
+        } catch (e) {
+            error.value = 'Error al cargar los detalles del dispositivo', e
+            console.error('Error loading device details:', error);
+        } finally {
+            isLoading.value = false;
+        }
+        return lastlocations;
+    };
 
     return {
+        device,
         devices,
         dataTable,
         dataFormatted,
         isLoading,
         error,
-        refresh: fetchDevices,
+        getDeviceById,
+        fetchDevices,
     }
 }
   

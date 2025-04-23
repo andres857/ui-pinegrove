@@ -40,6 +40,7 @@ export interface SigfoxDevice {
     deviceId: string;
     status?: string;
     friendlyName: string;
+    aliasDeviceType?: string
     SigfoxId: string;
     deviceType: string;
     deviceTypeId: string;
@@ -48,7 +49,7 @@ export interface SigfoxDevice {
     lastLocationUpdate: string;
     client: Client;
     messages: SigfoxMessage[];
-    locationHistory: any[]; // Puedes definir una interfaz específica si tienes la estructura
+    locationHistory: any[];
     location?: string;
 }
 
@@ -61,15 +62,15 @@ export interface DeviceLocation {
     timestamp: string; // ISO string, puedes usar Date si haces parse
 }
 
-export interface DeviceInfo {
-    deviceId: string;
-    friendlyName: string;
-    SigfoxId: string;
-    deviceType: string;
-    deviceTypeId: string;
-    aliasDeviceType: string;
-    lastLatitude: string;
-    lastLongitude: string;
-    lastLocationUpdate: string; // ISO string
-    locationHistory: DeviceLocation[];
-}
+// export interface DeviceInfo {
+//     deviceId: string;
+//     friendlyName: string;
+//     SigfoxId: string;
+//     deviceType: string;
+//     deviceTypeId: string;
+//     aliasDeviceType: string;
+//     lastLatitude: string;
+//     lastLongitude: string;
+//     lastLocationUpdate: string; // ISO string
+//     locationHistory: DeviceLocation[];
+// }

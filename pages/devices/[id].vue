@@ -7,14 +7,14 @@
         <!-- device information -->
         <div class="col-span-12 bg-gray-700 rounded-lg shadow-lg [&>strong]:font-bold text-gray-100 text-left overflow-hidden w-full h-min mb-5">
             <div class="py-2 px-6 [&>div>p]:leading-10 [&>div>p]:text-lg">
-                <div v-if="deviceInfo" class="flex items-center gap-4">
+                <div v-if="device" class="flex items-center gap-4">
                     <svg width="20px" height="20px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="8" cy="8" r="8" :fill="deviceStatusColor" />
                     </svg>
-                    <p><strong>Device ID: </strong>{{ deviceInfo?.SigfoxId || 'N/A' }}</p>
-                    <p><strong>Type: </strong> {{ deviceInfo.aliasDeviceType || 'N/A' }} </p>
-                    <p><strong>Name: </strong> {{ deviceInfo.friendlyName || 'N/A' }} </p>
-                    <p><strong>Last Update: </strong>{{ formatDate(deviceInfo.lastLocationUpdate) }}</p>
+                    <p><strong>Device ID: </strong>{{ device?.SigfoxId || 'N/A' }}</p>
+                    <p><strong>Type: </strong> {{ device.aliasDeviceType || 'N/A' }} </p>
+                    <p><strong>Name: </strong> {{ device.friendlyName || 'N/A' }} </p>
+                    <p><strong>Last Update: </strong>{{ formatDate(device.lastLocationUpdate) }}</p>
                     
                     <!-- Usar el modal con el icono como trigger -->
                     <div>
@@ -219,21 +219,24 @@
 </template>
 
 <script setup lang="ts">
-    import { useRuntimeConfig } from '#app'
-    import axios from 'axios'
     import { ref, onMounted, computed, reactive, watch } from 'vue'
     import { useRoute } from 'vue-router'
-    import Map from '~/components/MapMultipleLocations.vue'
+    import axios from 'axios'
+    import {useDevices} from '~/composables/usedevices'
     import Navbar from '~/components/Navbar.vue'
+    import Map from '~/components/MapMultipleLocations.vue'
     import ModalToggle from '~/components/ModalToggle.vue'
-    import type { DeviceInfo } from '~/types/device'
     import SpinnerLoader from '~/components/loaders/SpinnerLoader.vue'
+    import { formatDate } from '~/utils/date'
     
-    const config = useRuntimeConfig()
-    const apiBase = config.public.apiBase
     const route = useRoute()
     const deviceId = route.params.id as string
-    const deviceStatus = route.query.deviceStatus as string; // Accede al estado del dispositivo
+    const deviceStatus = route.query.deviceStatus as string;
+
+    const clientId = '51742590-5703-4a34-a2ba-f8a7bc863981'
+    const { getDeviceById, device, isLoading, error } = useDevices(clientId)
+    console.log('isloading device view', isLoading);
+    console.log('deviceId', device);
 
     // Add computed property for device status color
     const deviceStatusColor = computed(() => {
@@ -241,10 +244,7 @@
         return deviceStatus === 'Connected' ? '#008000' : '#FF0000';
     });
 
-    // Updated ref type for the new API response format
-    const deviceInfo = ref<DeviceInfo[] | null>(null)
-    const isLoading = ref(true)
-    const messagesHistory = ref([])
+    const messagesHistory = ref()
     const activeLocationIndex = ref(0)
 
     const startDate = ref(null);
@@ -253,7 +253,6 @@
     const isFiltered = ref(false) // Nuevo: Estado para saber si hay filtros activos
 
     const selectedLocation = ref(null)
-
 
     // Para manejar la edición del dispositivo
     const deviceModal = ref(null);
@@ -266,16 +265,16 @@
 
     // Función para preparar la edición cuando se abra el modal
     const prepareEditDevice = () => {
-        if (deviceInfo.value) {
-            editedDevice.deviceId = deviceInfo.value.SigfoxId;
-            editedDevice.friendlyName = deviceInfo.value.friendlyName || '';
-            editedDevice.aliasDeviceType = deviceInfo.value.aliasDeviceType || '';
-            editedDevice.SigfoxId = deviceInfo.value.SigfoxId;
+        if (device.value) {
+            editedDevice.deviceId = device.value.SigfoxId;
+            editedDevice.friendlyName = device.value.friendlyName || '';
+            editedDevice.aliasDeviceType = device.value.aliasDeviceType || '';
+            editedDevice.SigfoxId = device.value.SigfoxId;
         }
     };
 
     // Escuchar cuando se abre el modal para cargar los datos
-    watch(() => deviceModal.value?.isOpen, (isOpen) => {
+    watch(() => deviceModal.value?.isOpen , (isOpen) => {
         if (isOpen) {
             prepareEditDevice();
         }
@@ -285,9 +284,9 @@
     const updateDevice = async () => {
         try {
             // Actualizar los datos localmente primero
-            if (deviceInfo.value) {
-                deviceInfo.value.friendlyName = editedDevice.friendlyName;
-                deviceInfo.value.aliasDeviceType = editedDevice.aliasDeviceType;
+            if (device.value) {
+                device.value.friendlyName = editedDevice.friendlyName;
+                device.value.aliasDeviceType = editedDevice.aliasDeviceType;
             }
             
             // Enviar los cambios al servidor
@@ -310,13 +309,11 @@
 
     // Compute location history from the new API response format
     const locationHistory = computed(() => {
-        if (!deviceInfo.value || deviceInfo.value.length === 0) {
+        if (!device.value || !device.value.locationHistory || device.value.locationHistory.length === 0) {
             return [];
         }
         // Use the new data structure to create location history
-        return messagesHistory.value.map((loc: any, index: number) => {
-            // console.log('Location:', loc);
-            
+        return messagesHistory.value.map((loc: any, index: number) => {            
             return {
                 lat: Number(loc.latitude),
                 lng: Number(loc.longitude),
@@ -327,51 +324,6 @@
             };
         });
     });
-
-    const formatDate = (dateString: string | null): string => {
-        if (!dateString) return 'Not available';
-        return new Date(dateString).toLocaleString('es-ES', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    }
-
-    const loadDeviceDetails = async () => {
-        isLoading.value = true;
-        try {
-            const response = await axios.get(`${apiBase}/devices/${deviceId}`);
-            deviceInfo.value = response.data;
-            console.log('Device Info:', deviceInfo.value);
-            
-            formatMessagesHistory();
-        } catch (error) {
-            console.error('Error loading device details:', error);
-        } finally {
-            isLoading.value = false;
-        }
-    };
-
-    const formatMessagesHistory = () => {
-        if (!deviceInfo.value) return;
-        
-        // Tomar los últimos 10 registros y ordenarlos de más reciente a más antiguo
-        const last10Locations = [...deviceInfo.value.locationHistory]
-            .slice(-10)
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        
-        // Formatear las ubicaciones
-        messagesHistory.value = last10Locations.map((loc: any, index: number) => {
-            return {
-                ...loc,
-                label:  loc.locationName,
-                time: formatDate(loc.timestamp),
-            };
-        });
-    }
 
     // Función para restablecer los filtros
     const resetFilters = () => {
@@ -393,7 +345,7 @@
     };
 
     // Set active location
-    const setActiveLocation = (index) => {
+    const setActiveLocation = (index:any) => {
         activeLocationIndex.value = index;
         console.log('padre', index);
         selectedLocation.value = messagesHistory.value[index]
@@ -425,7 +377,7 @@
         // Si no tenemos el historial original, guardarlo
         if (originalLocations.value.length === 0) {
             console.log('Guardando historial original...');
-            originalLocations.value = [...deviceInfo.value.locationHistory];
+            originalLocations.value = [...device.value.locationHistory];
             console.log('Historial original guardado:', originalLocations.value.length, 'registros');
         }
         
@@ -483,8 +435,8 @@
         activeLocationIndex.value = 0;
     };
 
-    onMounted(() => {
-        loadDeviceDetails();
+    onMounted(async () => {
+        messagesHistory.value = await getDeviceById(deviceId);
     });
 </script>
 

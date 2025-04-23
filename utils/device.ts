@@ -38,3 +38,45 @@ export const formatDevicesData = (data: any) => {
     });
     return formattedData
 };
+
+export const formatMessagesHistory = (messages: any) => {
+    if (!messages) return;
+    
+    // Tomar los últimos 10 registros y ordenarlos de más reciente a más antiguo
+    const last10Locations = [...messages.locationHistory]
+        .slice(-10)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    // Formatear las ubicaciones
+    // const lastLocations = last10Locations.map((loc: any, index: number) => {
+    //     return {
+    //         ...loc,
+    //         label:  loc.locationName,
+    //         time: formatDate(loc.timestamp),
+    //     };
+    // });
+    // return lastLocations;
+    return last10Locations.map((loc: any) => ({
+        ...loc,
+        label: loc.locationName,
+        time: formatDate(loc.timestamp),
+    }));
+}
+
+    // const formatMessagesHistory = () => {
+    //     if (!deviceInfo.value) return;
+        
+    //     // Tomar los últimos 10 registros y ordenarlos de más reciente a más antiguo
+    //     const last10Locations = [...deviceInfo.value.locationHistory]
+    //         .slice(-10)
+    //         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        
+    //     // Formatear las ubicaciones
+    //     messagesHistory.value = last10Locations.map((loc: any, index: number) => {
+    //         return {
+    //             ...loc,
+    //             label:  loc.locationName,
+    //             time: formatDate(loc.timestamp),
+    //         };
+    //     });
+    // }
