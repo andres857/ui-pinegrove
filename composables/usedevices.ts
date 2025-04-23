@@ -73,6 +73,29 @@ export const useDevices = (clientId?: string) => {
         return lastlocations;
     };
 
+    const updateDeviceById = async (deviceId: string, friendlyName?:string, aliasDeviceType?:string ) => {
+        let statusHttp = null
+        if (!deviceId) {
+            throw new Error('deviceId is required')
+        }
+        const { put, isLoading, error } = useApi()
+
+        try {
+            const response = await put<SigfoxDevice>(`/devices/${deviceId}`,{
+                friendlyName: friendlyName,
+                aliasDeviceType: aliasDeviceType
+            })
+            device.value = response.data;            
+            statusHttp = response.status;
+        } catch (e) {
+            error.value = 'Error al actualizar el dispositivo', e
+            console.error('Error uploading device details:', error);
+        } finally {
+            isLoading.value = false;
+        }
+        return statusHttp;
+    };
+
     return {
         device,
         devices,
@@ -80,8 +103,9 @@ export const useDevices = (clientId?: string) => {
         dataFormatted,
         isLoading,
         error,
-        getDeviceById,
         fetchDevices,
+        getDeviceById,
+        updateDeviceById
     }
 }
   

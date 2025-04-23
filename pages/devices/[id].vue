@@ -123,7 +123,7 @@
         </div>
 
         <!-- Map and Timeline Container -->
-        <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4 mb-10">
+        <div class="h-[70vh] col-span-12 grid grapiid-cols-12 gap-4 mb-10">
             <!-- Timeline -->
             <div class="col-span-3 bg-white rounded-lg shadow-sm p-5 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-3">
@@ -221,7 +221,7 @@
 <script setup lang="ts">
     import { ref, onMounted, computed, reactive, watch } from 'vue'
     import { useRoute } from 'vue-router'
-    import axios from 'axios'
+    // import axios from 'axios'
     import {useDevices} from '~/composables/usedevices'
     import Navbar from '~/components/Navbar.vue'
     import Map from '~/components/MapMultipleLocations.vue'
@@ -234,13 +234,12 @@
     const deviceStatus = route.query.deviceStatus as string;
 
     const clientId = '51742590-5703-4a34-a2ba-f8a7bc863981'
-    const { getDeviceById, device, isLoading, error } = useDevices(clientId)
-    console.log('isloading device view', isLoading);
-    console.log('deviceId', device);
+    const { getDeviceById, updateDeviceById, device, isLoading, error } = useDevices(clientId)
+    // console.log('isloading device view', isLoading);
+    // console.log('deviceId', device);
 
     // Add computed property for device status color
     const deviceStatusColor = computed(() => {
-        // If the deviceStatus is 'connected', show green, otherwise show red
         return deviceStatus === 'Connected' ? '#008000' : '#FF0000';
     });
 
@@ -282,28 +281,17 @@
 
     // Función para enviar los cambios al servidor
     const updateDevice = async () => {
-        try {
-            // Actualizar los datos localmente primero
-            if (device.value) {
-                device.value.friendlyName = editedDevice.friendlyName;
-                device.value.aliasDeviceType = editedDevice.aliasDeviceType;
-            }
-            
-            // Enviar los cambios al servidor
-            const response = await axios.put(`${apiBase}/devices/${editedDevice.deviceId}`, {
-            
-                friendlyName: editedDevice.friendlyName,
-                aliasDeviceType: editedDevice.aliasDeviceType
-            });
-
-            if (response.status === 200 || response.status === 204) {
-                deviceModal.value?.closeModal();
-                console.log('Dispositivo actualizado correctamente');
-            } else {
-                console.error('Error al actualizar dispositivo:', response);
-            }
-        } catch (error) {
-            console.error('Error en la petición:', error);
+        if (device.value) {
+            device.value.friendlyName = editedDevice.friendlyName;
+            device.value.aliasDeviceType = editedDevice.aliasDeviceType;
+        }
+        const uploadDeviceStatus = await updateDeviceById(editedDevice.deviceId, editedDevice.friendlyName,editedDevice.aliasDeviceType)
+        
+        if (uploadDeviceStatus === 200 || uploadDeviceStatus === 204) {
+            deviceModal.value?.closeModal();
+            console.log('Dispositivo actualizado correctamente');
+        } else {
+            console.error('Error al actualizar dispositivo:', error);
         }
     };
 
@@ -397,7 +385,7 @@
         });
         
         // Filtrar ubicaciones según el rango de fechas
-        const filteredLocations = originalLocations.value.filter(location => {
+        const filteredLocations = originalLocations.value.filter((location:any) => {
             const locationDateTime = new Date(location.timestamp).getTime();
             const locationDate = new Date(location.timestamp);
             
@@ -417,7 +405,7 @@
         });
         
         // Ordenar las ubicaciones filtradas por fecha (más reciente primero)
-        const sortedLocations = [...filteredLocations].sort((a, b) => {
+        const sortedLocations = [...filteredLocations].sort((a: any, b:any) => {
             return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
         });
         
