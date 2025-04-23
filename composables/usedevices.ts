@@ -69,7 +69,9 @@ export const useDevices = (clientId?: string) => {
             console.error('Error loading device details:', error);
         } finally {
             isLoading.value = false;
-        }
+        }        
+        console.log('Last locations:', lastlocations);
+        
         return lastlocations;
     };
 

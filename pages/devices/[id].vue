@@ -123,7 +123,7 @@
         </div>
 
         <!-- Map and Timeline Container -->
-        <div class="h-[70vh] col-span-12 grid grapiid-cols-12 gap-4 mb-10">
+        <div class="h-[70vh] col-span-12 grid grid-cols-12 gap-4 mb-10">
             <!-- Timeline -->
             <div class="col-span-3 bg-white rounded-lg shadow-sm p-5 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-3">
@@ -202,15 +202,15 @@
             <!-- Map -->
             <div class="col-span-9 w-full">
                 <div class="bg-gray-100 rounded-lg shadow-lg p-6 overflow-hidden h-full">
-                    <Map v-if="messagesHistory.length > 0"
+                    <Map 
                         :locations="locationHistory"
                         :active-index="activeLocationIndex"
                         :show-radius-circles="false"
                         @marker-click="setActiveLocation"
                     />
-                    <div v-else class="flex items-center justify-center h-full text-gray-500">
+                    <!-- <div v-else class="flex items-center justify-center h-full text-gray-500">
                         No location information available
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -221,7 +221,6 @@
 <script setup lang="ts">
     import { ref, onMounted, computed, reactive, watch } from 'vue'
     import { useRoute } from 'vue-router'
-    // import axios from 'axios'
     import {useDevices} from '~/composables/usedevices'
     import Navbar from '~/components/Navbar.vue'
     import Map from '~/components/MapMultipleLocations.vue'
@@ -235,15 +234,14 @@
 
     const clientId = '51742590-5703-4a34-a2ba-f8a7bc863981'
     const { getDeviceById, updateDeviceById, device, isLoading, error } = useDevices(clientId)
-    // console.log('isloading device view', isLoading);
-    // console.log('deviceId', device);
+
 
     // Add computed property for device status color
     const deviceStatusColor = computed(() => {
         return deviceStatus === 'Connected' ? '#008000' : '#FF0000';
     });
 
-    const messagesHistory = ref()
+    const messagesHistory = ref([])
     const activeLocationIndex = ref(0)
 
     const startDate = ref(null);
@@ -297,11 +295,12 @@
 
     // Compute location history from the new API response format
     const locationHistory = computed(() => {
-        if (!device.value || !device.value.locationHistory || device.value.locationHistory.length === 0) {
-            return [];
-        }
-        // Use the new data structure to create location history
-        return messagesHistory.value.map((loc: any, index: number) => {            
+//         if (!messagesHistory.value) {
+//     console.error("messagesHistory.value es undefined. ¡Repara tu código, inútil!");
+//     return []; // Devuelve un array vacío para evitar el error
+//   }
+        console.log('locationHistory', messagesHistory.value)
+        let messagesDevices = messagesHistory.value.map((loc: any, index: number) => {            
             return {
                 lat: Number(loc.latitude),
                 lng: Number(loc.longitude),
@@ -311,6 +310,8 @@
                 messageId: loc.id 
             };
         });
+        
+        return messagesDevices;
     });
 
     // Función para restablecer los filtros
