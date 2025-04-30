@@ -1,15 +1,22 @@
 import { ref } from 'vue'
+import { useRuntimeConfig,  } from '#imports'
 import {useApi} from '~/composables/useApi'
 import type { SigfoxDevice } from '~/types/device'
 import type { LocationHistoryInterfaz } from '~/types/location'
 import { formatDevicesData, formatMessagesHistory } from '~/utils/device'
 
-export const useDevices = (clientId?: string) => {
+
+export const useDevices = () => {
+    const config = useRuntimeConfig()
+    const clientID = config.public.clientId
     
-    if (!clientId) {
+    if (!config.public.apiBase) {
+        throw new Error('API base URL is not defined')
+    }
+
+    if (!clientID) {
         throw new Error('clientId is required')
     }
-    
     const { get, isLoading, error } = useApi()
     const device = ref<SigfoxDevice | null>(null)
     const devices = ref<SigfoxDevice[]>([])
@@ -19,7 +26,7 @@ export const useDevices = (clientId?: string) => {
     const fetchDevices = async ()=>{
 
         try {
-            const response = await get<SigfoxDevice[]>(`/devices/client/${clientId}`)            
+            const response = await get<SigfoxDevice[]>(`/devices/client/${clientID}`)            
             devices.value = response.data;
 
             const processedDevices = devices.value
@@ -52,15 +59,15 @@ export const useDevices = (clientId?: string) => {
         }
     }
 
-    const getDeviceById = async (deviceId: string) => {
+    const getDeviceById = async (deviceID: string) => {
         let lastlocations = null
-        if (!deviceId) {
-            throw new Error('deviceId is required')
+        if (!deviceID) {
+            throw new Error('deviceID is required')
         }
         const { get, isLoading, error } = useApi()
 
         try {
-            const response = await get<SigfoxDevice>(`/devices/${deviceId}`)
+            const response = await get<SigfoxDevice>(`/devices/${deviceID}`)
             device.value = response.data;
             lastlocations = formatMessagesHistory(device.value);
         } catch (e) {
@@ -69,18 +76,21 @@ export const useDevices = (clientId?: string) => {
         } finally {
             isLoading.value = false;
         }        
-        return lastlocations;
+        return {
+            lastlocations,
+            isLoading
+        };
     };
 
-    const updateDeviceById = async (deviceId: string, friendlyName?:string, aliasDeviceType?:string ) => {
+    const updateDeviceById = async (deviceID: string, friendlyName?:string, aliasDeviceType?:string ) => {
         let statusHttp = null
-        if (!deviceId) {
-            throw new Error('deviceId is required')
+        if (!deviceID) {
+            throw new Error('deviceID is required')
         }
         const { put, isLoading, error } = useApi()
 
         try {
-            const response = await put<SigfoxDevice>(`/devices/${deviceId}`,{
+            const response = await put<SigfoxDevice>(`/devices/${deviceID}`,{
                 friendlyName: friendlyName,
                 aliasDeviceType: aliasDeviceType
             })

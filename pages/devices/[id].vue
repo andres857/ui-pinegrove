@@ -418,8 +418,15 @@
         activeLocationIndex.value = 0;
     };
 
-    onMounted(async () => {
-        messagesHistory.value = await getDeviceById(deviceId);
+    onMounted(() => {
+        setTimeout(async () => {
+            console.log('Obteniendo información del dispositivo...');
+            
+            const device = await getDeviceById(deviceId);
+            console.log(messagesHistory.value);
+            console.log('isloading', isLoading.value);
+            isLoading.value = false;
+        }, 300);
     });
 </script>
 

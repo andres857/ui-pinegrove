@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
+      clientId: process.env.CLIENT_ID,
       apiBase: process.env.PUBLIC_API,
       apiGoogleMaps: process.env.API_GOOGLE_MAPS
     }
