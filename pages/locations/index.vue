@@ -84,6 +84,7 @@
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
+    const idClient = config.public.idClient
 
     const router = useRouter()
 
@@ -146,7 +147,7 @@
         isLoading.value = true
         error.value = null
         try {
-            const response = await axios.get<Location[]>(`${apiBase}/devices/client/51742590-5703-4a34-a2ba-f8a7bc863981`)
+            const response = await axios.get<Location[]>(`${apiBase}/devices/client/${idClient}`)
             devices.value = response.data
         } catch (e) {
             error.value = 'Error al cargar las devices'

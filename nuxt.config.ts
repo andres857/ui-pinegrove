@@ -1,9 +1,10 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.PUBLIC_API,
-      apiGoogleMaps: process.env.API_GOOGLE_MAPS
+      apiGoogleMaps: process.env.API_GOOGLE_MAPS,
+      idClient: process.env.ID_CLIENT,
+      idInTransitLocation: process.env.ID_INSTRANSIT_LOCATION
     }
   },
   modules: ['@nuxtjs/tailwindcss'],

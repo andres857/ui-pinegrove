@@ -151,10 +151,9 @@
             query: { deviceStatus: item.status }
         });
     }
-
     const formatDate = (dateString: string | null): string => {
         if (!dateString) return 'No disponible';
-        return new Date(dateString).toLocaleString('es-ES', {
+        return new Date(dateString).toLocaleString('en-US', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',

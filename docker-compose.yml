@@ -1,21 +1,59 @@
 services: 
-  ui-dev:
+  ui-view-dev:
     build:
       context: .
       target: dev
     restart: unless-stopped
+    profiles: ["dev"]
     environment:
       - PUBLIC_API=${PUBLIC_API}
       - API_GOOGLE_MAPS=${API_GOOGLE_MAPS}
       - HOST=0.0.0.0
-
+      - ID_CLIENT=${ID_CLIENT}
+      - ID_INSTRANSIT_LOCATION=${ID_INSTRANSIT_LOCATION}
     volumes:
       - ./:/usr/src/app
       - /usr/src/app/node_modules
       # - .node_modules:/usr/src/app/node_modules
     ports:
-      - 1234:3000
+      - ${PORT_DEVEL_VIEW}:3000
+    networks:
+      - pinegrove-technogym-network
+
+# PRODUCTION
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    profiles: ["production"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - ui-view-production
+    ports:
+      - "26:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+    networks:
+      - pinegrove-technogym-network
+
+  ui-view-production:
+    build:
+      context: .
+      target: production
+    restart: unless-stopped
+    profiles: ["production"]
+    environment:
+      - PUBLIC_API=${PUBLIC_API}
+      - API_GOOGLE_MAPS=${API_GOOGLE_MAPS}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+    networks:
+      - pinegrove-technogym-network
 
 networks:
-  follow-network:
+  pinegrove-technogym-network:
     driver: bridge

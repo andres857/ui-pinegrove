@@ -116,7 +116,7 @@
         isLoading.value = true
         error.value = null        
         try {
-            const response = await axios.get<Location[]>(`${apiBase}/locations/report/51742590-5703-4a34-a2ba-f8a7bc863981`)
+            const response = await axios.get<Location[]>(`${apiBase}/locations/report/e8a53dfb-bd89-4419-9602-414bea118aae`)
             // locations.value = response.data
             locations.value = response.data.sort((a, b) => {
                 // Asumiendo que el índice es un número

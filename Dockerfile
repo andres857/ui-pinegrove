@@ -5,7 +5,7 @@ COPY package.json yarn.lock ./
 RUN yarn install
 COPY . .
 EXPOSE 3000
-CMD ["yarn", "run", "dev"]
+CMD ["yarn", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # Etapa de construcción y producción
 FROM node:18-alpine as production
