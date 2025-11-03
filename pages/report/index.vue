@@ -7,9 +7,9 @@
         <div class="p-6 border-b border-gray-700">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-              <span class="text-gray-900 font-bold">F</span>
+              <span class="text-gray-900 font-bold">T</span>
             </div>
-            <span class="text-xl font-bold text-yellow-500">Fiillo</span>
+            <span class="text-xl font-bold text-yellow-500">Technogym</span>
           </div>
         </div>
         
@@ -22,6 +22,11 @@
           <NuxtLink to="/locations" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span class="text-sm font-medium">Locations</span>
+          </NuxtLink>
+
+          <NuxtLink to="/devices" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-sm font-medium">Devices</span>
           </NuxtLink>
 
           <NuxtLink to="/report" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-yellow-500 text-gray-900 transition-all">
