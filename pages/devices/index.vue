@@ -67,14 +67,24 @@
               <div class="relative max-w-md">
                 <input
                   v-model="searchValue"
+                  @keydown="handleSearch"
                   class="w-full px-4 py-2.5 pl-10 bg-gray-800 border border-gray-700 rounded-lg focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-sm text-white placeholder-gray-400"
-                  placeholder="Search device..."
+                  placeholder="Search by SigfoxID (6 chars) or device name..."
                 />
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg v-if="!isSearching" class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                   </svg>
+                  <svg v-else aria-hidden="true" class="h-5 w-5 text-yellow-500 animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="#eab308"/>
+                  </svg>
                 </div>
+              </div>
+              
+              <!-- Error message -->
+              <div v-if="error" class="mt-2 text-sm text-red-400">
+                {{ error }}
               </div>
             </div>
 
@@ -120,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, watch } from 'vue';
     import axios from 'axios';
     import { useRuntimeConfig } from '#app';
     import { useRouter } from 'vue-router';
@@ -128,22 +138,15 @@
     import type { SigfoxDevice } from '~/components/types/index';
     import StatusIconDevice from '~/components/StatusIconDevice.vue';
 
-    interface LocationHistoryInterfaz {
-        id: null,
-        latitude: null,
-        longitude: null,
-        locationName: string,
-        timestamp: null
-    }
-
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
     const router = useRouter()
 
     const searchValue = ref('')
     const itemsPerPage = ref(10)
+    const isSearching = ref(false)
+    const SIGFOX_ID_LENGTH = 6 // Longitud estándar de SigfoxId
 
-    const devices = ref<SigfoxDevice[]>([])
     const dataTable = ref()
     const isLoading = ref(false)
     const error = ref<string | null>(null)
@@ -153,7 +156,7 @@
         { text: "Sigfox ID", value: "SigfoxId" },
         { text: "Type", value: "aliasDeviceType" },
         { text: "Name", value: "friendlyName" },
-        { text: "Last Location", value: "lastLocation.locationName" },
+        { text: "Last Location", value: "lastLocationName" },
         { 
             text: "Last Seen",
             value: "formattedTimestamp",
@@ -166,31 +169,13 @@
         error.value = null
         try {
             const response = await axios.get<SigfoxDevice[]>(`${apiBase}/devices`)
-            devices.value = response.data;
-            console.log('devicesss', devices.value);
-
-            const processedDevices = devices.value
-                .map((device: any) => {
-                    const defaultLocation: LocationHistoryInterfaz = {
-                        id: device.SigfoxId,
-                        latitude: null,
-                        longitude: null,
-                        locationName: 'not Available',
-                        timestamp: null
-                    };
-                    device.locationHistory = device.locationHistory.sort((a, b) => {
-                        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-                    });
-                    
-                    return {
-                        ...device,
-                        lastLocation: device.locationHistory.length > 0 ? device.locationHistory[0] || defaultLocation : defaultLocation
-                    };
-                })    
-            console.log('Devices with details:99999999', processedDevices);
             
-            dataTable.value = processedDevices;
-            formatDevicesData();
+            dataTable.value = response.data.map((device: any) => ({
+                ...device,
+                lastLocationName: device.locationHistory?.[0]?.locationName || 'Not Available',
+                formattedTimestamp: formatDate(device.lastLocationUpdate)
+            }));
+            
         } catch (e) {
             error.value = 'Error al cargar los dispositivos'
             console.error('Error fetching devices:', e)
@@ -199,9 +184,81 @@
         }
     }
 
-    const handleRowClick = (item: SigfoxDevice) => {
-        console.log('Row clicked:', item.status);
+    // Buscar device específico en el backend
+    const searchDeviceInBackend = async (sigfoxId: string) => {
+        if (!sigfoxId.trim()) return;
         
+        isSearching.value = true;
+        error.value = null; // Limpiar errores anteriores
+        
+        try {
+            const response = await axios.get<SigfoxDevice>(`${apiBase}/devices/search/${sigfoxId.trim()}`);
+            
+            const deviceFormatted = {
+                ...response.data,
+                lastLocationName: response.data.locationHistory?.[0]?.locationName || 'Not Available',
+                formattedTimestamp: formatDate(response.data.lastLocationUpdate)
+            };
+            
+            // Verificar si el device ya está en la tabla
+            const exists = dataTable.value.some((d: any) => d.SigfoxId === deviceFormatted.SigfoxId);
+            
+            if (!exists) {
+                // Agregar al inicio de la tabla
+                dataTable.value = [deviceFormatted, ...dataTable.value];
+            }
+            
+        } catch (e: any) {
+            if (e.response?.status === 404) {
+                error.value = `Device "${sigfoxId}" not found`;
+            } else {
+                error.value = 'Error searching device';
+            }
+            console.error('Error searching device:', e);
+        } finally {
+            isSearching.value = false;
+        }
+    }
+
+    // Verificar si hay resultados locales
+    const hasLocalResults = (query: string): boolean => {
+        if (!query.trim() || !dataTable.value) return true;
+        
+        return dataTable.value.some((device: any) => 
+            device.SigfoxId.toLowerCase().includes(query.toLowerCase()) ||
+            device.friendlyName?.toLowerCase().includes(query.toLowerCase())
+        );
+    }
+
+    // Manejar la búsqueda cuando se presiona Enter (fallback)
+    const handleSearch = (event: KeyboardEvent) => {
+        if (event.key === 'Enter' && searchValue.value.trim()) {
+            error.value = null; // Limpiar errores
+            
+            if (!hasLocalResults(searchValue.value)) {
+                searchDeviceInBackend(searchValue.value);
+            }
+        }
+    }
+
+    // Watch para búsqueda automática al completar 6 caracteres
+    watch(searchValue, (newValue) => {
+        // Limpiar error cuando el usuario empieza a escribir
+        if (error.value) {
+            error.value = null;
+        }
+
+        // Si tiene exactamente 6 caracteres (longitud de SigfoxId)
+        if (newValue.trim().length === SIGFOX_ID_LENGTH) {
+            // Verificar si hay resultados locales
+            if (!hasLocalResults(newValue)) {
+                // No hay resultados locales, buscar en backend automáticamente
+                searchDeviceInBackend(newValue);
+            }
+        }
+    });
+
+    const handleRowClick = (item: SigfoxDevice) => {
         router.push({
             path: `/devices/${item.deviceId}`,
             query: { deviceStatus: item.status }
@@ -219,55 +276,6 @@
             hour12: false
         });
     };
-
-    const formatDevicesData = () => {
-        if (!dataTable.value) return;
-        
-        // Helper function to get timestamp safely
-        const getTimestamp = (dateString: string | null): number => {
-            if (!dateString) return 0;
-            return new Date(dateString).getTime();
-        };
-        
-        // Sort by lastLocationUpdate (most recent first)
-        dataTable.value = dataTable.value
-            .sort((a: any, b: any) => {
-                const timestampA = getTimestamp(a.lastLocationUpdate);
-                const timestampB = getTimestamp(b.lastLocationUpdate);
-                return timestampB - timestampA; 
-            })
-            
-            // Format dates and add any additional display properties
-            .map((device: any) => {
-                // Create a status property based on how recent the update is
-                let status = "offline"; // Default status
-                let statusColor = "#FF0000"; // Red for offline
-                
-                if (device.lastLocationUpdate) {
-                    const lastSeen = getTimestamp(device.lastLocationUpdate);
-                    const now = Date.now();
-                    const hoursDifference = (now - lastSeen) / (1000 * 60 * 60);
-                    
-                    if (hoursDifference <= 48) {
-                        status = "Connected";
-                        statusColor = "#008000"; // Green for online
-                    } else {
-                        status = "Disconnected";
-                        statusColor = "#FF0000"; // Red for offline
-                    }
-                }
-                
-                // Return enhanced device object
-                return {
-                    ...device,
-                    status,
-                    statusColor,
-                    formattedTimestamp: formatDate(device.lastLocationUpdate)
-                };
-            });
-        console.log('Devices with details:', dataTable.value);
-    };
-    
 
     onMounted(() => {
         fetchDevices()

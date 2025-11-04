@@ -216,6 +216,7 @@
         try {
             const response = await axios.get<Location[]>(`${apiBase}/devices/client/${idClient}`)
             devices.value = response.data
+            console.log('devicesssss',devices.value);
         } catch (e) {
             error.value = 'Error al cargar las devices'
             console.error('Error fetching locations:', e)
